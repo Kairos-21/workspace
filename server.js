@@ -211,33 +211,12 @@ app.get('/api/favicon', async (req, res) => {
         
         console.log('[Favicon] 正在获取 ' + hostname + ' 的 favicon');
         
-        // 方案1: 尝试直接获取 /favicon.ico（跟随重定向）
-        const favicon1 = await tryFetchFaviconWithRedirect(origin + '/favicon.ico');
-        if (favicon1) {
-            console.log('[Favicon] 成功 (favicon.ico)');
-            return res.json({
-                success: true,
-                data: { faviconUrl: favicon1, method: 'favicon.ico' }
-            });
-        }
-        
-        // 方案2: 解析 HTML 页面获取 favicon link
-        const favicon2 = await fetchHtmlFavicon(origin);
-        if (favicon2) {
-            console.log('[Favicon] 成功 (HTML解析)');
-            return res.json({
-                success: true,
-                data: { faviconUrl: favicon2, method: 'html-parse' }
-            });
-        }
-        
-        // 方案3: 使用第三方服务（不验证，直接返回URL让前端尝试）
-        // IconHorse 服务可以访问被墙的网站
-        const iconHorseUrl = 'https://icon.horse/icon/' + hostname;
-        console.log('[Favicon] 使用第三方服务:', iconHorseUrl);
+        // 方案0: 直接使用 Google 服务（特别适用于 Google 旗下网站）
+        const googleFaviconUrl = `https://www.google.com/s2/favicons?domain=${hostname}&sz=64`;
+        console.log('[Favicon] 尝试使用 Google 服务:', googleFaviconUrl);
         return res.json({
             success: true,
-            data: { faviconUrl: iconHorseUrl, method: 'iconhorse' }
+            data: { faviconUrl: googleFaviconUrl, method: 'google-service' }
         });
         
     } catch (err) {
