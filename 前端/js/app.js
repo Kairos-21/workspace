@@ -43,13 +43,16 @@ async function loadData() {
         if (localData) {
             const parsedData = JSON.parse(localData);
             Object.assign(window.appData, parsedData);
-            console.log('从 LocalStorage 加载数据成功');
+            console.log('✅ 从 LocalStorage 加载数据成功');
+            showToast('已加载你的个人数据');
             initBackground();
             initAllModules();
             return;
         }
         
         // 2. LocalStorage 没有数据，从后端加载默认数据
+        console.log('ℹ️ LocalStorage 无数据，从后端加载默认数据');
+        showToast('欢迎！这是你的第一次访问');
         const response = await fetch(`${API_BASE}/api/data`);
         const result = await response.json();
         
@@ -57,9 +60,9 @@ async function loadData() {
             Object.assign(window.appData, result.data);
             // 保存一份到 LocalStorage，下次直接用
             saveToLocalStorage();
-            console.log('从后端加载数据并保存到 LocalStorage');
+            console.log('✅ 从后端加载数据并保存到 LocalStorage');
         } else {
-            console.error('加载数据失败:', result.message);
+            console.error('❌ 加载数据失败:', result.message);
             showToast('数据加载失败，使用默认数据');
         }
         
@@ -68,7 +71,7 @@ async function loadData() {
         initAllModules();
         
     } catch (error) {
-        console.error('加载数据失败:', error);
+        console.error('❌ 加载数据失败:', error);
         showToast('无法连接服务器，使用本地数据');
         initBackground();
         initAllModules();
