@@ -208,39 +208,72 @@ function showToast(message, duration = 1500) {
 // ========================================
 
 /**
- * 导出数据
+ * 导出数据（前端处理）
  */
 function exportData() {
-    window.location.href = `${API_BASE}/api/export`;
     showToast('正在导出数据...');
+    
+    // 准备导出数据
+    const exportData = JSON.parse(JSON.stringify(window.appData));
+    
+    // 生成文件名
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    const filename = `workspace-backup-${timestamp}.json`;
+    
+    // 创建 Blob
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    
+    // 创建下载链接
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    
+    // 触发下载
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    
+    // 释放 URL
+    URL.revokeObjectURL(url);
+    
+    showToast('数据导出成功！');
 }
 
 /**
- * 导入数据
+ * 导入数据（前端处理）
  */
 function importData(file) {
-    const formData = new FormData();
-    formData.append('file', file);
+    showToast('正在导入数据...');
     
-    fetch(`${API_BASE}/api/import`, {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(result => {
-        if (result.success) {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+        try {
+            const importedData = JSON.parse(event.target.result);
+            
+            // 验证数据格式
+            if (!importedData.shortcuts) {
+                showToast('导入失败：数据格式不正确');
+                return;
+            }
+            
+            // 更新数据
+            Object.assign(window.appData, importedData);
+            saveData();
+            
             showToast('数据导入成功，正在刷新...');
             setTimeout(() => {
                 location.reload();
             }, 1000);
-        } else {
-            showToast('导入失败: ' + result.message);
+        } catch (error) {
+            console.error('导入失败:', error);
+            showToast('导入失败：无法解析文件');
         }
-    })
-    .catch(error => {
-        console.error('导入失败:', error);
-        showToast('导入失败');
-    });
+    };
+    reader.onerror = () => {
+        showToast('导入失败：无法读取文件');
+    };
+    reader.readAsText(file);
 }
 
 // ========================================
@@ -299,38 +332,23 @@ function closeBgModal() {
 }
 
 /**
- * 上传并保存背景
+ * 上传并保存背景（完全前端处理）
  */
 function uploadBackground(file) {
-    const formData = new FormData();
-    formData.append('background', file);
-    
-    showToast('正在上传背景...');
-    
-    fetch(`${API_BASE}/api/upload-background`, {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(result => {
-        if (result.success) {
-            // 保存背景路径
-            if (!appData.settings) appData.settings = {};
-            appData.settings.backgroundPath = result.data.path;
-            saveData();
-            
-            // 应用背景
-            applyBackground(result.data.path);
-            showToast('背景更换成功');
-            closeBgModal();
-        } else {
-            showToast('上传失败: ' + result.message);
-        }
-    })
-    .catch(error => {
-        console.error('上传背景失败:', error);
-        showToast('上传失败');
-    });
+    showToast('正在处理背景...');
+    const reader = new FileReader();
+    reader.onload = (event) => {
+        if (!appData.settings) appData.settings = {};
+        appData.settings.backgroundPath = event.target.result; // Base64
+        saveData(); // 只保存到 LocalStorage
+        applyBackground(event.target.result);
+        showToast('背景更换成功');
+        closeBgModal();
+    };
+    reader.onerror = () => {
+        showToast('背景处理失败');
+    };
+    reader.readAsDataURL(file);
 }
 
 /**

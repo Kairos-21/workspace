@@ -714,36 +714,30 @@ function showAddFolderModal() {
         document.getElementById('folderIconPreviewLarge').textContent = e.target.value || '📁';
     };
     
-    // 图标上传
+    // 图标上传（前端处理）
     document.getElementById('folderIconFile').onchange = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
         
         const preview = document.getElementById('folderIconPreview');
         preview.style.display = 'flex';
-        preview.innerHTML = '<span style="color: var(--text-secondary);">上传中...</span>';
+        preview.innerHTML = '<span style="color: var(--text-secondary);">处理中...</span>';
         
-        const formData = new FormData();
-        formData.append('icon', file);
-        
-        try {
-            const res = await fetch('/api/upload-icon', { method: 'POST', body: formData });
-            const data = await res.json();
-            
-            if (data.success && data.data) {
-                customIconPath = data.data.path;
-                preview.innerHTML = `
-                    <div class="uploaded-icon-wrapper">
-                        <img src="${data.data.path}" class="uploaded-icon-img">
-                        <span class="uploaded-icon-name">${file.name}</span>
-                    </div>
-                `;
-            } else {
-                preview.innerHTML = '<span style="color: #e74c3c;">上传失败</span>';
-            }
-        } catch (err) {
-            preview.innerHTML = '<span style="color: #e74c3c;">上传失败</span>';
-        }
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            customIconPath = event.target.result;
+            preview.innerHTML = `
+                <div class="uploaded-icon-wrapper">
+                    <img src="${event.target.result}" class="uploaded-icon-img">
+                    <span class="uploaded-icon-name">${file.name}</span>
+                </div>
+            `;
+            window.showToast(`已选择: ${file.name}`);
+        };
+        reader.onerror = () => {
+            preview.innerHTML = '<span style="color: #e74c3c;">处理失败</span>';
+        };
+        reader.readAsDataURL(file);
     };
     
     document.getElementById('addFolderCancel').onclick = closeModal;
@@ -909,36 +903,30 @@ function showEditFolderModal(id) {
         document.getElementById('editFolderIconPreviewLarge').textContent = e.target.value || '📁';
     };
     
-    // 图标上传
+    // 图标上传（前端处理）
     document.getElementById('editFolderIconFile').onchange = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
         
         const preview = document.getElementById('editFolderIconPreview');
         preview.style.display = 'flex';
-        preview.innerHTML = '<span style="color: var(--text-secondary);">上传中...</span>';
+        preview.innerHTML = '<span style="color: var(--text-secondary);">处理中...</span>';
         
-        const formData = new FormData();
-        formData.append('icon', file);
-        
-        try {
-            const res = await fetch('/api/upload-icon', { method: 'POST', body: formData });
-            const data = await res.json();
-            
-            if (data.success && data.data) {
-                customIconPath = data.data.path;
-                preview.innerHTML = `
-                    <div class="uploaded-icon-wrapper">
-                        <img src="${data.data.path}" class="uploaded-icon-img">
-                        <span class="uploaded-icon-name">${file.name}</span>
-                    </div>
-                `;
-            } else {
-                preview.innerHTML = '<span style="color: #e74c3c;">上传失败</span>';
-            }
-        } catch (err) {
-            preview.innerHTML = '<span style="color: #e74c3c;">上传失败</span>';
-        }
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            customIconPath = event.target.result;
+            preview.innerHTML = `
+                <div class="uploaded-icon-wrapper">
+                    <img src="${event.target.result}" class="uploaded-icon-img">
+                    <span class="uploaded-icon-name">${file.name}</span>
+                </div>
+            `;
+            window.showToast(`已选择: ${file.name}`);
+        };
+        reader.onerror = () => {
+            preview.innerHTML = '<span style="color: #e74c3c;">处理失败</span>';
+        };
+        reader.readAsDataURL(file);
     };
     
     document.getElementById('editFolderCancel').onclick = closeModal;
@@ -1268,31 +1256,19 @@ function showAddShortcutModal() {
             const preview = document.getElementById('customIconPreview');
             if (!preview) return;
             
-            preview.innerHTML = '<span style="color: var(--text-secondary);">⏳ 上传中...</span>';
+            preview.innerHTML = '<span style="color: var(--text-secondary);">⏳ 处理中...</span>';
             
-            const formData = new FormData();
-            formData.append('icon', file);
-            
-            try {
-                const res = await fetch('/api/upload-icon', {
-                    method: 'POST',
-                    body: formData
-                });
-                const data = await res.json();
-                
-                if (data.success && data.data) {
-                    currentCustomIconPath = data.data.path;
-                    preview.innerHTML = `<img src="${data.data.path}" style="width:48px;height:48px;border-radius:8px;object-fit:contain;">`;
-                    window.showToast(`✓ 已上传: ${file.name}`);
-                } else {
-                    preview.innerHTML = '<span style="color: var(--text-secondary); font-size: 0.85rem;">❌ 上传失败</span>';
-                    window.showToast('上传失败: ' + (data.message || '未知错误'));
-                }
-            } catch (err) {
-                console.error('上传图标失败:', err);
-                preview.innerHTML = '<span style="color: var(--text-secondary); font-size: 0.85rem;">❌ 上传失败</span>';
-                window.showToast('上传失败');
-            }
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                currentCustomIconPath = event.target.result;
+                preview.innerHTML = `<img src="${event.target.result}" style="width:48px;height:48px;border-radius:8px;object-fit:contain;">`;
+                window.showToast(`✓ 已选择: ${file.name}`);
+            };
+            reader.onerror = () => {
+                preview.innerHTML = '<span style="color: var(--text-secondary); font-size: 0.85rem;">❌ 处理失败</span>';
+                window.showToast('处理失败');
+            };
+            reader.readAsDataURL(file);
         };
     }
     
@@ -1559,31 +1535,19 @@ function showEditShortcutModal(id) {
             const preview = document.getElementById('customIconPreview');
             if (!preview) return;
             
-            preview.innerHTML = '<span style="color: var(--text-secondary);">⏳ 上传中...</span>';
+            preview.innerHTML = '<span style="color: var(--text-secondary);">⏳ 处理中...</span>';
             
-            const formData = new FormData();
-            formData.append('icon', file);
-            
-            try {
-                const res = await fetch('/api/upload-icon', {
-                    method: 'POST',
-                    body: formData
-                });
-                const data = await res.json();
-                
-                if (data.success && data.data) {
-                    currentCustomIconPath = data.data.path;
-                    preview.innerHTML = `<img src="${currentCustomIconPath}" style="width:48px;height:48px;border-radius:8px;object-fit:contain;">`;
-                    window.showToast(`✓ 已上传: ${file.name}`);
-                } else {
-                    preview.innerHTML = '<span style="color: var(--text-secondary); font-size: 0.85rem;">❌ 上传失败</span>';
-                    window.showToast('上传失败: ' + (data.message || '未知错误'));
-                }
-            } catch (err) {
-                console.error('上传图标失败:', err);
-                preview.innerHTML = '<span style="color: var(--text-secondary); font-size: 0.85rem;">❌ 上传失败</span>';
-                window.showToast('上传失败');
-            }
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                currentCustomIconPath = event.target.result;
+                preview.innerHTML = `<img src="${currentCustomIconPath}" style="width:48px;height:48px;border-radius:8px;object-fit:contain;">`;
+                window.showToast(`✓ 已选择: ${file.name}`);
+            };
+            reader.onerror = () => {
+                preview.innerHTML = '<span style="color: var(--text-secondary); font-size: 0.85rem;">❌ 处理失败</span>';
+                window.showToast('处理失败');
+            };
+            reader.readAsDataURL(file);
         };
     }
     
@@ -1704,12 +1668,6 @@ function deleteShortcut(id) {
     // 先在根目录找
     let index = shortcuts.findIndex(s => s.id === id);
     if (index > -1) {
-        const shortcut = shortcuts[index];
-        if (shortcut.iconType === 'custom' && shortcut.customIconPath) {
-            fetch(`/api/file?path=${encodeURIComponent(shortcut.customIconPath)}&type=icon`, {
-                method: 'DELETE'
-            }).catch(err => console.error('删除图标文件失败:', err));
-        }
         shortcuts.splice(index, 1);
         window.debouncedSave();
         renderShortcuts();
@@ -1722,12 +1680,6 @@ function deleteShortcut(id) {
         if (folder.children) {
             index = folder.children.findIndex(s => s.id === id);
             if (index > -1) {
-                const shortcut = folder.children[index];
-                if (shortcut.iconType === 'custom' && shortcut.customIconPath) {
-                    fetch(`/api/file?path=${encodeURIComponent(shortcut.customIconPath)}&type=icon`, {
-                        method: 'DELETE'
-                    }).catch(err => console.error('删除图标文件失败:', err));
-                }
                 folder.children.splice(index, 1);
                 window.debouncedSave();
                 renderShortcuts();

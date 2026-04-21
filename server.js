@@ -123,38 +123,9 @@ const DEFAULT_DATA = {
     ]
 };
 
-// 加载数据
+// 加载数据（始终返回默认数据，不读取文件）
 function loadData() {
-    try {
-        if (fs.existsSync(DATA_FILE)) {
-            const data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
-            
-            // 向后兼容：将 shortcuts 迁移到新结构
-            if (data.shortcuts && data.shortcuts.length > 0) {
-                data.shortcuts = data.shortcuts.map(s => ({
-                    ...s,
-                    iconType: s.iconType || 'default'
-                }));
-            }
-            
-            // 向后兼容：将 pomodoroSettings 迁移到新结构
-            if (data.pomodoroSettings) {
-                if (!data.pomodoroSettings.sounds) {
-                    data.pomodoroSettings.sounds = [
-                        { id: 'qing', name: '磬声（默认）', type: 'preset', file: 'sounds/qing.wav' }
-                    ];
-                }
-                if (!data.pomodoroSettings.selectedSoundId) {
-                    data.pomodoroSettings.selectedSoundId = 'qing';
-                }
-            }
-            
-            console.log('[DEBUG] 从文件加载数据成功');
-            return data;
-        }
-    } catch (err) {
-        console.error('[ERROR] 加载数据失败:', err);
-    }
+    console.log('[INFO] 加载默认数据');
     return { ...DEFAULT_DATA };
 }
 
@@ -200,201 +171,20 @@ app.post('/api/data', (req, res) => {
     });
 });
 
-// 路由：导出数据（包含上传的文件）
+// 禁用：导出数据
 app.get('/api/export', (req, res) => {
-    const data = loadData();
-    
-    // 创建导出数据副本
-    const exportData = JSON.parse(JSON.stringify(data));
-    
-    // 辅助函数：将文件转为 base64
-    function fileToBase64(relativePath) {
-        if (!relativePath) return null;
-        try {
-            // relativePath 格式: /uploads/icons/xxx.png
-            const filePath = path.join(__dirname, relativePath);
-            if (fs.existsSync(filePath)) {
-                const fileBuffer = fs.readFileSync(filePath);
-                const ext = path.extname(filePath).toLowerCase();
-                const mimeType = {
-                    '.png': 'image/png',
-                    '.jpg': 'image/jpeg',
-                    '.jpeg': 'image/jpeg',
-                    '.svg': 'image/svg+xml',
-                    '.gif': 'image/gif',
-                    '.mp3': 'audio/mpeg',
-                    '.wav': 'audio/wav',
-                    '.ogg': 'audio/ogg',
-                    '.m4a': 'audio/mp4'
-                }[ext] || 'application/octet-stream';
-                return `data:${mimeType};base64,${fileBuffer.toString('base64')}`;
-            }
-        } catch (err) {
-            console.error('读取文件失败:', relativePath, err.message);
-        }
-        return null;
-    }
-    
-    // 导出自定义图标
-    if (exportData.shortcuts) {
-        exportData.shortcuts.forEach(shortcut => {
-            if (shortcut.customIconPath) {
-                const base64 = fileToBase64(shortcut.customIconPath);
-                if (base64) {
-                    shortcut.customIconBase64 = base64;
-                }
-            }
-            // 处理文件夹内的快捷方式
-            if (shortcut.type === 'folder' && shortcut.children) {
-                shortcut.children.forEach(child => {
-                    if (child.customIconPath) {
-                        const base64 = fileToBase64(child.customIconPath);
-                        if (base64) {
-                            child.customIconBase64 = base64;
-                        }
-                    }
-                });
-            }
-        });
-    }
-    
-    // 导出背景图片
-    if (exportData.settings && exportData.settings.backgroundPath) {
-        const base64 = fileToBase64(exportData.settings.backgroundPath);
-        if (base64) {
-            exportData.settings.backgroundBase64 = base64;
-        }
-    }
-    
-    // 导出自定义提示音
-    if (exportData.settings && exportData.settings.customSoundPath) {
-        const base64 = fileToBase64(exportData.settings.customSoundPath);
-        if (base64) {
-            exportData.settings.customSoundBase64 = base64;
-        }
-    }
-    
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-    const filename = 'workspace_backup_' + timestamp + '.json';
-    
-    res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Content-Disposition', 'attachment; filename="' + filename + '"');
-    res.send(JSON.stringify(exportData, null, 2));
+    res.status(501).json({
+        success: false,
+        message: '数据导出已完全迁移到前端，请在浏览器中操作'
+    });
 });
 
-// 路由：导入数据（恢复上传的文件）
-const upload = multer({ dest: 'uploads/' });
-app.post('/api/import', upload.single('file'), (req, res) => {
-    try {
-        if (!req.file) {
-            return res.status(400).json({
-                success: false,
-                message: '未收到文件'
-            });
-        }
-        
-        const fileContent = fs.readFileSync(req.file.path, 'utf8');
-        const data = JSON.parse(fileContent);
-        
-        // 辅助函数：从 base64 恢复文件
-        function base64ToFile(base64Data, type) {
-            if (!base64Data) return null;
-            try {
-                // base64Data 格式: data:image/png;base64,xxxxx
-                const matches = base64Data.match(/^data:([^;]+);base64,(.+)$/);
-                if (!matches) return null;
-                
-                const mimeType = matches[1];
-                const base64 = matches[2];
-                const buffer = Buffer.from(base64, 'base64');
-                
-                // 根据类型确定目录和扩展名
-                let dir, ext;
-                if (mimeType.startsWith('image/')) {
-                    dir = ICONS_DIR;
-                    ext = mimeType.split('/')[1];
-                    if (ext === 'svg+xml') ext = 'svg';
-                    if (ext === 'jpeg') ext = 'jpg';
-                } else if (mimeType.startsWith('audio/')) {
-                    dir = SOUNDS_DIR;
-                    ext = mimeType.split('/')[1];
-                    if (ext === 'mpeg') ext = 'mp3';
-                } else {
-                    return null;
-                }
-                
-                // 特殊处理背景图片
-                if (type === 'background') {
-                    dir = BACKGROUNDS_DIR;
-                }
-                
-                const filename = `${type}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}.${ext}`;
-                const filePath = path.join(dir, filename);
-                fs.writeFileSync(filePath, buffer);
-                
-                return `/uploads/${type === 'background' ? 'backgrounds' : (mimeType.startsWith('image/') ? 'icons' : 'sounds')}/${filename}`;
-            } catch (err) {
-                console.error('恢复文件失败:', err.message);
-                return null;
-            }
-        }
-        
-        // 恢复自定义图标
-        if (data.shortcuts) {
-            data.shortcuts.forEach(shortcut => {
-                if (shortcut.customIconBase64) {
-                    const newPath = base64ToFile(shortcut.customIconBase64, 'icon');
-                    if (newPath) {
-                        shortcut.customIconPath = newPath;
-                    }
-                    delete shortcut.customIconBase64;
-                }
-                // 处理文件夹内的快捷方式
-                if (shortcut.type === 'folder' && shortcut.children) {
-                    shortcut.children.forEach(child => {
-                        if (child.customIconBase64) {
-                            const newPath = base64ToFile(child.customIconBase64, 'icon');
-                            if (newPath) {
-                                child.customIconPath = newPath;
-                            }
-                            delete child.customIconBase64;
-                        }
-                    });
-                }
-            });
-        }
-        
-        // 恢复背景图片
-        if (data.settings && data.settings.backgroundBase64) {
-            const newPath = base64ToFile(data.settings.backgroundBase64, 'background');
-            if (newPath) {
-                data.settings.backgroundPath = newPath;
-            }
-            delete data.settings.backgroundBase64;
-        }
-        
-        // 恢复自定义提示音
-        if (data.settings && data.settings.customSoundBase64) {
-            const newPath = base64ToFile(data.settings.customSoundBase64, 'sound');
-            if (newPath) {
-                data.settings.customSoundPath = newPath;
-            }
-            delete data.settings.customSoundBase64;
-        }
-        
-        saveData(data);
-        fs.unlinkSync(req.file.path); // 删除临时文件
-        
-        res.json({
-            success: true,
-            message: '数据导入成功'
-        });
-    } catch (err) {
-        res.status(500).json({
-            success: false,
-            message: '导入失败: ' + err.message
-        });
-    }
+// 禁用：导入数据
+app.post('/api/import', (req, res) => {
+    res.status(501).json({
+        success: false,
+        message: '数据导入已完全迁移到前端，请在浏览器中操作'
+    });
 });
 
 // ==================== 新增 API ====================
@@ -626,120 +416,31 @@ function fetchHtmlFavicon(origin, maxRedirects = 5) {
 /**
  * 上传自定义图标
  */
-app.post('/api/upload-icon', iconUpload.single('icon'), (req, res) => {
-    try {
-        if (!req.file) {
-            return res.status(400).json({
-                success: false,
-                message: '未收到文件'
-            });
-        }
-        
-        const filePath = 'uploads/icons/' + req.file.filename;
-        const originalName = req.file.originalname;
-        
-        console.log('[Icon] 上传成功: ' + filePath);
-        
-        res.json({
-            success: true,
-            data: {
-                path: filePath,
-                filename: req.file.filename,
-                originalName: originalName
-            },
-            message: '图标上传成功'
-        });
-    } catch (err) {
-        console.error('[Icon] 上传失败:', err);
-        res.status(500).json({
-            success: false,
-            message: err.message || '上传失败'
-        });
-    }
+app.post('/api/upload-icon', (req, res) => {
+    res.status(501).json({
+        success: false,
+        message: '图标上传已完全迁移到前端，请在浏览器中操作'
+    });
 });
 
 /**
  * 上传提示音
  */
-app.post('/api/upload-sound', soundUpload.single('sound'), (req, res) => {
-    try {
-        if (!req.file) {
-            return res.status(400).json({
-                success: false,
-                message: '未收到文件'
-            });
-        }
-        
-        const filePath = 'uploads/sounds/' + req.file.filename;
-        const originalName = req.file.originalname;
-        const soundId = 'custom_' + Date.now();
-        
-        console.log('[Sound] 上传成功: ' + filePath);
-        
-        res.json({
-            success: true,
-            data: {
-                id: soundId,
-                path: filePath,
-                filename: req.file.filename,
-                originalName: originalName,
-                type: 'custom'
-            },
-            message: '提示音上传成功'
-        });
-    } catch (err) {
-        console.error('[Sound] 上传失败:', err);
-        res.status(500).json({
-            success: false,
-            message: err.message || '上传失败'
-        });
-    }
+app.post('/api/upload-sound', (req, res) => {
+    res.status(501).json({
+        success: false,
+        message: '提示音上传已完全迁移到前端，请在浏览器中操作'
+    });
 });
 
 /**
  * 删除上传的文件
  */
 app.delete('/api/file', (req, res) => {
-    const { path: filePath, type } = req.query;
-    
-    if (!filePath) {
-        return res.status(400).json({
-            success: false,
-            message: '缺少文件路径'
-        });
-    }
-    
-    // 安全检查：只允许删除 uploads 目录下的文件
-    if (!filePath.startsWith('uploads/')) {
-        return res.status(403).json({
-            success: false,
-            message: '非法路径'
-        });
-    }
-    
-    const fullPath = path.join(__dirname, filePath);
-    
-    try {
-        if (fs.existsSync(fullPath)) {
-            fs.unlinkSync(fullPath);
-            console.log('[File] 已删除: ' + filePath);
-            res.json({
-                success: true,
-                message: '文件删除成功'
-            });
-        } else {
-            res.status(404).json({
-                success: false,
-                message: '文件不存在'
-            });
-        }
-    } catch (err) {
-        console.error('[File] 删除失败:', err);
-        res.status(500).json({
-            success: false,
-            message: '删除失败'
-        });
-    }
+    res.status(501).json({
+        success: false,
+        message: '文件删除已完全迁移到前端，请在浏览器中操作'
+    });
 });
 
 // Multer 配置 - 背景图片上传
@@ -766,32 +467,11 @@ const bgUpload = multer({
 });
 
 // API: 上传背景图片
-app.post('/api/upload-background', bgUpload.single('background'), (req, res) => {
-    try {
-        if (!req.file) {
-            return res.status(400).json({
-                success: false,
-                message: '未收到文件'
-            });
-        }
-        
-        const filePath = '/uploads/backgrounds/' + req.file.filename;
-        
-        res.json({
-            success: true,
-            data: {
-                path: filePath,
-                filename: req.file.filename
-            },
-            message: '背景图片上传成功'
-        });
-    } catch (err) {
-        console.error('[Background] 上传失败:', err);
-        res.status(500).json({
-            success: false,
-            message: err.message || '上传失败'
-        });
-    }
+app.post('/api/upload-background', (req, res) => {
+    res.status(501).json({
+        success: false,
+        message: '背景上传已完全迁移到前端，请在浏览器中操作'
+    });
 });
 
 // 启动服务器
