@@ -1,2 +1,14 @@
+# 依赖
 node_modules/
-uploads/
+
+# 数据和上传
+data/*.json
+后端/uploads/
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 临时文件
+*.log
+tmp/
