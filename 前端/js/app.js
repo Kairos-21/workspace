@@ -1,6 +1,7 @@
 /**
  * 个人工作台 - 主入口
  * 负责：数据加载、API通信、全局状态管理
+ * 多用户方案：优先使用 LocalStorage，实现用户隔离
  */
 
 // 全局数据存储
@@ -22,11 +23,14 @@ let appData = {
 // API 基础路径
 const API_BASE = '';
 
+// LocalStorage Key
+const STORAGE_KEY = 'personal-workspace-data';
+
 // 保存状态定时器
 let saveTimer = null;
 
 // ========================================
-// API 通信
+// 数据通信（LocalStorage优先）
 // ========================================
 
 /**
@@ -34,32 +38,63 @@ let saveTimer = null;
  */
 async function loadData() {
     try {
+        // 1. 先尝试从 LocalStorage 加载
+        const localData = localStorage.getItem(STORAGE_KEY);
+        if (localData) {
+            const parsedData = JSON.parse(localData);
+            Object.assign(window.appData, parsedData);
+            console.log('从 LocalStorage 加载数据成功');
+            initBackground();
+            initAllModules();
+            return;
+        }
+        
+        // 2. LocalStorage 没有数据，从后端加载默认数据
         const response = await fetch(`${API_BASE}/api/data`);
         const result = await response.json();
         
         if (result.success) {
-            // 直接更新 window.appData 对象，而不是重新赋值变量
             Object.assign(window.appData, result.data);
-            // 初始化背景
-            initBackground();
-            // 初始化各个模块
-            initAllModules();
+            // 保存一份到 LocalStorage，下次直接用
+            saveToLocalStorage();
+            console.log('从后端加载数据并保存到 LocalStorage');
         } else {
             console.error('加载数据失败:', result.message);
             showToast('数据加载失败，使用默认数据');
-            initAllModules();
         }
+        
+        // 初始化背景和模块
+        initBackground();
+        initAllModules();
+        
     } catch (error) {
         console.error('加载数据失败:', error);
-        showToast('无法连接服务器，使用默认数据');
+        showToast('无法连接服务器，使用本地数据');
+        initBackground();
         initAllModules();
     }
 }
 
 /**
- * 保存所有数据
+ * 保存数据到 LocalStorage
+ */
+function saveToLocalStorage() {
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+        console.log('数据已保存到 LocalStorage');
+    } catch (error) {
+        console.error('保存到 LocalStorage 失败:', error);
+    }
+}
+
+/**
+ * 保存所有数据（主要存 LocalStorage，可选同步后端）
  */
 async function saveData() {
+    // 优先保存到 LocalStorage
+    saveToLocalStorage();
+    
+    // 可选：也同步保存到后端（如果不想要可以注释掉）
     try {
         const response = await fetch(`${API_BASE}/api/data`, {
             method: 'POST',
@@ -71,12 +106,11 @@ async function saveData() {
         
         const result = await response.json();
         if (result.success) {
-            console.log('数据保存成功');
-        } else {
-            console.error('保存失败:', result.message);
+            console.log('数据也同步保存到后端');
         }
     } catch (error) {
-        console.error('保存失败:', error);
+        // 后端保存失败没关系，LocalStorage 已经成功了
+        console.log('后端保存失败，但数据已安全存在本地');
     }
 }
 
