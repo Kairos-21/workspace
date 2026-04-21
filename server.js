@@ -190,37 +190,14 @@ app.get('/api/data', (req, res) => {
     });
 });
 
-// 路由：保存数据
+// 路由：保存数据（现在不真正保存，保持后端数据为默认）
 app.post('/api/data', (req, res) => {
-    console.log('[DEBUG] ========== 收到保存请求 ==========');
-    console.log('[DEBUG] 数据路径:', DATA_FILE);
-    console.log('[DEBUG] 请求体类型:', typeof req.body);
-    console.log('[DEBUG] 待办数量:', req.body && req.body.todos ? req.body.todos.length : 0);
-    console.log('[DEBUG] 完整请求体:', JSON.stringify(req.body).substring(0, 500));
-    
-    if (req.body) {
-        const success = saveData(req.body);
-        console.log('[DEBUG] 保存结果:', success);
-        if (success) {
-            res.json({
-                success: true,
-                data: null,
-                message: '数据保存成功'
-            });
-        } else {
-            res.status(500).json({
-                success: false,
-                data: null,
-                message: '保存数据失败'
-            });
-        }
-    } else {
-        res.status(400).json({
-            success: false,
-            data: null,
-            message: '未收到有效数据'
-        });
-    }
+    console.log('[INFO] 收到保存请求，但现在只使用 LocalStorage，不保存到后端');
+    res.json({
+        success: true,
+        data: null,
+        message: '数据已安全保存在本地浏览器'
+    });
 });
 
 // 路由：导出数据（包含上传的文件）

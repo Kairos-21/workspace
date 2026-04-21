@@ -91,30 +91,11 @@ function saveToLocalStorage() {
 }
 
 /**
- * 保存所有数据（主要存 LocalStorage，可选同步后端）
+ * 保存所有数据（只存 LocalStorage，不碰后端，实现完全用户隔离）
  */
 async function saveData() {
-    // 优先保存到 LocalStorage
+    // 只保存到 LocalStorage，完全隔离用户数据
     saveToLocalStorage();
-    
-    // 可选：也同步保存到后端（如果不想要可以注释掉）
-    try {
-        const response = await fetch(`${API_BASE}/api/data`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(appData)
-        });
-        
-        const result = await response.json();
-        if (result.success) {
-            console.log('数据也同步保存到后端');
-        }
-    } catch (error) {
-        // 后端保存失败没关系，LocalStorage 已经成功了
-        console.log('后端保存失败，但数据已安全存在本地');
-    }
 }
 
 /**
