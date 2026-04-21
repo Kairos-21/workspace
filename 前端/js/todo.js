@@ -318,6 +318,8 @@ function saveTodoOrder() {
 // 子任务点击定时器
 let subtaskClickTimer = null;
 let lastClickedSubtask = null;
+// 标记子任务是否已通过Enter键添加，避免失焦时重复添加
+let subtaskAddedByEnter = false;
 
 /**
  * 绑定子任务单击/双击事件
@@ -628,11 +630,14 @@ function hideSubtaskInput(todoId) {
     const input = area.querySelector('.add-subtask-input');
     
     if (trigger && wrapper && input) {
-        // 失焦时保存内容
+        // 失焦时保存内容 - 但要检查是否已经通过Enter键添加过
         const content = input.value.trim();
-        if (content) {
+        if (content && !subtaskAddedByEnter) {
             addSubtask(todoId, content);
         }
+        
+        // 重置标志
+        subtaskAddedByEnter = false;
         
         // 延迟隐藏，给点击其他元素留时间
         setTimeout(() => {
@@ -655,6 +660,20 @@ function handleSubtaskInput(event, todoId) {
         if (content) {
             addSubtask(todoId, content);
             input.value = '';
+            // 标记已通过Enter键添加
+            subtaskAddedByEnter = true;
+            // 阻止默认行为，避免失焦时再次触发
+            event.preventDefault();
+            // 立即隐藏输入框，而不是等失焦
+            const area = document.querySelector(`.add-subtask-area[data-todo-id="${todoId}"]`);
+            if (area) {
+                const trigger = area.querySelector('.add-subtask-trigger');
+                const wrapper = area.querySelector('.add-subtask-input-wrapper');
+                if (trigger && wrapper) {
+                    trigger.style.display = 'flex';
+                    wrapper.style.display = 'none';
+                }
+            }
         }
     }
 }
