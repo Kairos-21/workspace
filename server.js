@@ -1,5 +1,5 @@
 /**
- * 个人工作台后端服务
+ * 个人工作台后端服务 - 用于部署
  * Node.js + Express
  */
 const express = require('express');
@@ -17,11 +17,11 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// 静态文件服务
-app.use(express.static(path.join(__dirname, '..', '前端')));
+// 静态文件服务 - 注意路径：从根目录直接找 前端/
+app.use(express.static(path.join(__dirname, '前端')));
 
 // 数据文件路径 - 使用环境变量或默认路径
-const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, '..', 'data');
+const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, 'data');
 const DATA_FILE = path.join(DATA_DIR, 'data.json');
 
 // 确保数据目录存在
@@ -127,7 +127,7 @@ const DEFAULT_DATA = {
 function loadData() {
     try {
         if (fs.existsSync(DATA_FILE)) {
-            const data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8'));
+            const data = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
             
             // 向后兼容：将 shortcuts 迁移到新结构
             if (data.shortcuts && data.shortcuts.length > 0) {
@@ -165,7 +165,7 @@ function saveData(data) {
         if (!fs.existsSync(dir)) {
             fs.mkdirSync(dir, { recursive: true });
         }
-        fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf-8');
+        fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2), 'utf8');
         console.log('[DEBUG] 数据已保存到:', DATA_FILE);
         return true;
     } catch (err) {
@@ -174,9 +174,9 @@ function saveData(data) {
     }
 }
 
-// 路由：主页
+// 路由：主页 - 注意路径
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', '前端', 'index.html'));
+    res.sendFile(path.join(__dirname, '前端', 'index.html'));
 });
 
 // 路由：获取数据
@@ -316,7 +316,7 @@ app.post('/api/import', upload.single('file'), (req, res) => {
             });
         }
         
-        const fileContent = fs.readFileSync(req.file.path, 'utf-8');
+        const fileContent = fs.readFileSync(req.file.path, 'utf8');
         const data = JSON.parse(fileContent);
         
         // 辅助函数：从 base64 恢复文件
@@ -566,41 +566,6 @@ function tryFetchFaviconWithRedirect(faviconUrl, maxRedirects = 5) {
         };
         
         fetchWithRedirect(faviconUrl, 0);
-    });
-}
-
-/**
- * 尝试获取 favicon 图片
- * @param {string} faviconUrl - favicon URL
- * @param {boolean} skipVerify - 是否跳过验证（第三方服务直接信任）
- */
-function tryFetchFavicon(faviconUrl, skipVerify = false) {
-    return new Promise((resolve) => {
-        const protocol = faviconUrl.startsWith('https') ? https : http;
-        
-        const req = protocol.get(faviconUrl, { 
-            timeout: 5000,
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-            }
-        }, (res) => {
-            // 第三方服务直接信任，或者状态码 200 且是图片类型
-            if (skipVerify) {
-                resolve(faviconUrl);
-            } else if (res.statusCode === 200) {
-                const contentType = res.headers['content-type'] || '';
-                // 放宽验证：只要是 200 就认为成功（很多 favicon 没有正确的 content-type）
-                resolve(faviconUrl);
-            } else {
-                resolve(null);
-            }
-        });
-        
-        req.on('error', () => resolve(null));
-        req.on('timeout', () => {
-            req.destroy();
-            resolve(null);
-        });
     });
 }
 

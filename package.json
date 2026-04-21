@@ -2,9 +2,9 @@
   "name": "personal-workspace",
   "version": "1.0.0",
   "description": "个人工作台 - 全栈项目",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node server.js"
   },
   "dependencies": {
     "express": "^4.18.2",
