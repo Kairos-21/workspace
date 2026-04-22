@@ -67,7 +67,12 @@ async function loadData() {
         
         if (result.success) {
             Object.assign(window.appData, result.data);
-            console.log('✅ 从后端加载数据成功，正在保存到 LocalStorage...');
+            console.log('✅ 从后端加载数据成功，正在调整日期...');
+            
+            // 调整待办和日程的日期到今天
+            adjustDemoDatesToToday();
+            
+            console.log('✅ 日期调整完成，正在保存到 LocalStorage...');
             // 保存一份到 LocalStorage，下次直接用
             saveToLocalStorage();
             console.log('✅ 已保存到 LocalStorage');
@@ -141,6 +146,84 @@ function debouncedSave() {
  */
 function generateId() {
     return Date.now().toString(36) + Math.random().toString(36).substr(2);
+}
+
+/**
+ * 调整演示数据中的待办和日程日期到今天
+ */
+function adjustDemoDatesToToday() {
+    const today = getToday();
+    const todayDate = new Date(today);
+    
+    // 1. 找到所有日期中的最晚日期作为基准
+    let latestDate = null;
+    const allDates = [];
+    
+    // 从 todosByDate 中收集日期
+    if (appData.todosByDate) {
+        Object.keys(appData.todosByDate).forEach(dateStr => {
+            allDates.push(dateStr);
+        });
+    }
+    
+    // 从 schedules 中收集日期
+    if (appData.schedules) {
+        appData.schedules.forEach(schedule => {
+            if (schedule.date) allDates.push(schedule.date);
+            if (schedule.endDate) allDates.push(schedule.endDate);
+        });
+    }
+    
+    // 找到最晚的日期
+    if (allDates.length > 0) {
+        latestDate = allDates.reduce((latest, current) => {
+            return new Date(current) > new Date(latest) ? current : latest;
+        });
+    }
+    
+    if (!latestDate) {
+        console.log('没有找到日期数据，无需调整');
+        return;
+    }
+    
+    // 2. 计算日期差（天数）
+    const latestDateObj = new Date(latestDate);
+    const daysDiff = Math.floor((todayDate - latestDateObj) / (1000 * 60 * 60 * 24));
+    
+    console.log(`基准日期: ${latestDate}, 今天: ${today}, 相差: ${daysDiff} 天`);
+    
+    // 3. 调整 todosByDate 中的日期
+    if (appData.todosByDate) {
+        const newTodosByDate = {};
+        Object.keys(appData.todosByDate).forEach(oldDateStr => {
+            const newDateStr = addDaysToDate(oldDateStr, daysDiff);
+            newTodosByDate[newDateStr] = appData.todosByDate[oldDateStr];
+        });
+        appData.todosByDate = newTodosByDate;
+        console.log('待办日期已调整');
+    }
+    
+    // 4. 调整 schedules 中的日期
+    if (appData.schedules) {
+        appData.schedules.forEach(schedule => {
+            if (schedule.date) {
+                schedule.date = addDaysToDate(schedule.date, daysDiff);
+            }
+            if (schedule.endDate) {
+                schedule.endDate = addDaysToDate(schedule.endDate, daysDiff);
+            }
+        });
+        console.log('日程日期已调整');
+    }
+}
+
+/**
+ * 给日期字符串加上指定天数
+ */
+function addDaysToDate(dateStr, days) {
+    const date = new Date(dateStr);
+    date.setDate(date.getDate() + days);
+    return date.toISOString().split('T')[0];
 }
 
 /**
