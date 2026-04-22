@@ -155,14 +155,17 @@ function adjustDemoDatesToToday() {
     const today = getToday();
     const todayDate = new Date(today);
     
-    // 1. 找到所有日期中的最晚日期作为基准
-    let latestDate = null;
+    // 1. 找到所有日期中的最早日期作为基准（让最早的日期变成今天）
+    let earliestDate = null;
     const allDates = [];
     
-    // 从 todosByDate 中收集日期
+    // 从 todosByDate 中收集日期（只收集有数据的日期）
     if (appData.todosByDate) {
         Object.keys(appData.todosByDate).forEach(dateStr => {
-            allDates.push(dateStr);
+            const todos = appData.todosByDate[dateStr];
+            if (todos && todos.length > 0) {
+                allDates.push(dateStr);
+            }
         });
     }
     
@@ -170,27 +173,26 @@ function adjustDemoDatesToToday() {
     if (appData.schedules) {
         appData.schedules.forEach(schedule => {
             if (schedule.date) allDates.push(schedule.date);
-            if (schedule.endDate) allDates.push(schedule.endDate);
         });
     }
     
-    // 找到最晚的日期
+    // 找到最早的日期
     if (allDates.length > 0) {
-        latestDate = allDates.reduce((latest, current) => {
-            return new Date(current) > new Date(latest) ? current : latest;
+        earliestDate = allDates.reduce((earliest, current) => {
+            return new Date(current) < new Date(earliest) ? current : earliest;
         });
     }
     
-    if (!latestDate) {
+    if (!earliestDate) {
         console.log('没有找到日期数据，无需调整');
         return;
     }
     
     // 2. 计算日期差（天数）
-    const latestDateObj = new Date(latestDate);
-    const daysDiff = Math.floor((todayDate - latestDateObj) / (1000 * 60 * 60 * 24));
+    const earliestDateObj = new Date(earliestDate);
+    const daysDiff = Math.floor((todayDate - earliestDateObj) / (1000 * 60 * 60 * 24));
     
-    console.log(`基准日期: ${latestDate}, 今天: ${today}, 相差: ${daysDiff} 天`);
+    console.log(`基准日期: ${earliestDate}, 今天: ${today}, 相差: ${daysDiff} 天`);
     
     // 3. 调整 todosByDate 中的日期
     if (appData.todosByDate) {
