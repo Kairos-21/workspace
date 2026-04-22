@@ -17,7 +17,9 @@ let appData = {
         soundEnabled: true
     },
     pomodoroRecords: [],
-    memos: []
+    memos: [],
+    todosByDate: {},
+    settings: {}
 };
 
 // API 基础路径
@@ -38,12 +40,19 @@ let saveTimer = null;
  */
 async function loadData() {
     try {
+        console.log('🔄 开始加载数据...');
+        
         // 1. 先尝试从 LocalStorage 加载
         const localData = localStorage.getItem(STORAGE_KEY);
         if (localData) {
+            console.log('✅ LocalStorage 中有数据，正在解析...');
             const parsedData = JSON.parse(localData);
             Object.assign(window.appData, parsedData);
             console.log('✅ 从 LocalStorage 加载数据成功');
+            console.log('📊 当前数据:', {
+                shortcutsCount: appData.shortcuts?.length || 0,
+                hasBackground: !!appData.settings?.backgroundPath
+            });
             showToast('已加载你的个人数据');
             initBackground();
             initAllModules();
@@ -58,9 +67,10 @@ async function loadData() {
         
         if (result.success) {
             Object.assign(window.appData, result.data);
+            console.log('✅ 从后端加载数据成功，正在保存到 LocalStorage...');
             // 保存一份到 LocalStorage，下次直接用
             saveToLocalStorage();
-            console.log('✅ 从后端加载数据并保存到 LocalStorage');
+            console.log('✅ 已保存到 LocalStorage');
         } else {
             console.error('❌ 加载数据失败:', result.message);
             showToast('数据加载失败，使用默认数据');
@@ -83,10 +93,22 @@ async function loadData() {
  */
 function saveToLocalStorage() {
     try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
-        console.log('数据已保存到 LocalStorage');
+        // 先检查数据大小
+        const dataString = JSON.stringify(appData);
+        const dataSizeKB = (new Blob([dataString])).size / 1024;
+        console.log(`数据大小: ${dataSizeKB.toFixed(2)} KB`);
+        
+        if (dataSizeKB > 5000) { // LocalStorage 通常限制在 5-10MB
+            console.warn('⚠️ 数据较大，可能无法保存到 LocalStorage');
+        }
+        
+        localStorage.setItem(STORAGE_KEY, dataString);
+        console.log('✅ 数据已保存到 LocalStorage');
     } catch (error) {
-        console.error('保存到 LocalStorage 失败:', error);
+        console.error('❌ 保存到 LocalStorage 失败:', error);
+        if (error.name === 'QuotaExceededError') {
+            showToast('数据太大，无法保存到浏览器');
+        }
     }
 }
 
