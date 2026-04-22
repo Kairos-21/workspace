@@ -93,19 +93,22 @@ const soundUpload = multer({
     }
 });
 
-// 默认数据
-const DEFAULT_DATA = {
-    todos: [],
-    schedules: [],
-    shortcuts: [
-        { id: 's1', name: 'GitHub', url: 'https://github.com', icon: 'github', type: 'web', iconType: 'default' },
-        { id: 's2', name: 'Google', url: 'https://google.com', icon: 'google', type: 'web', iconType: 'default' },
-        { id: 's3', name: 'Bilibili', url: 'https://bilibili.com', icon: 'bilibili', type: 'web', iconType: 'default' },
-        { id: 's4', name: '知乎', url: 'https://zhihu.com', icon: 'zhihu', type: 'web', iconType: 'default' },
-        { id: 's5', name: '掘金', url: 'https://juejin.cn', icon: 'juejin', type: 'web', iconType: 'default' },
-        { id: 's6', name: 'Notion', url: 'https://notion.so', icon: 'notion', type: 'web', iconType: 'default' }
-    ],
-    pomodoroSettings: {
+// 读取默认数据文件
+function getDefaultData() {
+  const fs = require('fs');
+  const path = require('path');
+  try {
+    const dataPath = path.join(__dirname, 'workspace-backup-2026-04-22T04-15-45.json');
+    const dataContent = fs.readFileSync(dataPath, 'utf8');
+    return JSON.parse(dataContent);
+  } catch (err) {
+    console.error('读取默认数据文件失败:', err);
+    // 如果读取失败，返回简单的默认数据
+    return {
+      todos: [],
+      schedules: [],
+      shortcuts: [],
+      pomodoroSettings: {
         workDuration: 25,
         shortBreak: 5,
         longBreak: 15,
@@ -113,15 +116,20 @@ const DEFAULT_DATA = {
         targetCount: 4,
         soundEnabled: true,
         sounds: [
-            { id: 'qing', name: '磬声（默认）', type: 'preset', file: 'sounds/qing.wav' }
+          { id: 'qing', name: '磬声（默认）', type: 'preset', file: 'sounds/qing.wav' }
         ],
         selectedSoundId: 'qing'
-    },
-    pomodoroRecords: [],
-    memos: [
+      },
+      pomodoroRecords: [],
+      memos: [
         { id: 'm1', title: '默认备忘录', content: '', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
-    ]
-};
+      ]
+    };
+  }
+}
+
+// 默认数据
+const DEFAULT_DATA = getDefaultData();
 
 // 加载数据（始终返回默认数据，不读取文件）
 function loadData() {
