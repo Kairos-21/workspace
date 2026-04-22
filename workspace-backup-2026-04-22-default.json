@@ -1,0 +1,686 @@
+{
+  "todos": [],
+  "schedules": [
+    {
+      "id": "mo31oia7bi77motjses",
+      "title": "产品demo开发",
+      "date": "2026-04-16",
+      "endDate": "2026-04-18",
+      "startTime": "00:00",
+      "endTime": "00:00",
+      "priority": "high",
+      "category": "学习",
+      "color": "#3498DB",
+      "description": "",
+      "createdAt": "2026-04-17T15:10:07.75Z"
+    },
+    {
+      "id": "mo31xlwajvt4n5hl1lp",
+      "title": "简历修改",
+      "date": "2026-04-17",
+      "endDate": "2026-04-18",
+      "startTime": "00:00",
+      "endTime": "00:00",
+      "priority": "high",
+      "category": "学习",
+      "color": "#E67E22",
+      "description": "",
+      "createdAt": "2026-04-17T15:17:12.345Z"
+    },
+    {
+      "id": "mo8xpzqc3ptmhv0k3o",
+      "title": "产品demo开发",
+      "date": "2026-04-22",
+      "endDate": "2026-04-25",
+      "startTime": "02:05",
+      "endTime": "",
+      "priority": "high",
+      "category": "工作",
+      "color": "#3498DB",
+      "description": "",
+      "createdAt": "2026-04-21T18:05:55.62Z"
+    }
+  ],
+  "shortcuts": [
+    {
+      "id": "mo6mhius1q9zuh2puza",
+      "name": "AI",
+      "icon": "📁",
+      "type": "folder",
+      "displayMode": "preview",
+      "children": [
+        {
+          "id": "mo8xmb76zhh0z9bs3ng",
+          "name": "chatgpt",
+          "url": "https://chatgpt.com/zh-CN/",
+          "icon": "default",
+          "type": "web",
+          "iconType": "favicon",
+          "faviconUrl": "https://icon.horse/icon/chatgpt.com"
+        },
+        {
+          "id": "mo8xmlgpseuece5iy7k",
+          "name": "meta",
+          "url": "https://metaso.cn/?s=sbypcpz&referrer_s=sbypcpz",
+          "icon": "default",
+          "type": "web",
+          "iconType": "favicon",
+          "faviconUrl": "https://metaso.cn/favicon.ico"
+        },
+        {
+          "id": "mo8xmwcle1ryh3kgajg",
+          "name": "yuanbao",
+          "url": "https://yuanbao.tencent.com/chat/naQivTmsDa",
+          "icon": "default",
+          "type": "web",
+          "iconType": "favicon",
+          "faviconUrl": "https://yuanbao.tencent.com/favicon.ico"
+        },
+        {
+          "id": "mo8y5xzx3fbgxav4gaw",
+          "name": "aistudio",
+          "url": "https://aistudio.google.com/?pli=1",
+          "icon": "default",
+          "type": "web",
+          "iconType": "favicon",
+          "faviconUrl": "https://www.google.com/s2/favicons?domain=aistudio.google.com&sz=64"
+        }
+      ],
+      "createdAt": "2026-04-20T03:15:52.37Z",
+      "iconType": "default"
+    },
+    {
+      "id": "mo411ec948rqdu39uts",
+      "name": "coze",
+      "url": "https://www.coze.cn/",
+      "icon": "default",
+      "type": "web",
+      "iconType": "favicon",
+      "faviconUrl": "https://lf-coze-web-cdn.coze.cn/obj/coze-web-cn/coze-space/static/favicon2.ico",
+      "customIconPath": null
+    },
+    {
+      "id": "demo_shortcut_3",
+      "name": "Bilibili",
+      "url": "https://bilibili.com",
+      "icon": "bilibili",
+      "type": "web",
+      "iconType": "favicon",
+      "faviconUrl": "https://www.bilibili.com/favicon.ico"
+    },
+    {
+      "id": "mo2ll85o0e5y2ssu2zfm",
+      "name": "飞书",
+      "url": "feishu://",
+      "icon": "default",
+      "type": "app",
+      "iconType": "default",
+      "faviconUrl": null,
+      "customIconPath": null
+    },
+    {
+      "id": "mo2lko7pbacmd9qsbfp",
+      "name": "微信",
+      "url": "weixin://",
+      "icon": "wechat",
+      "type": "app",
+      "iconType": "default",
+      "faviconUrl": null,
+      "customIconPath": null
+    },
+    {
+      "id": "mo2lkwir36gbn5qexmr",
+      "name": "QQ",
+      "url": "tencent://",
+      "icon": "figma",
+      "type": "app",
+      "iconType": "default",
+      "faviconUrl": null,
+      "customIconPath": null
+    },
+    {
+      "id": "mo2lj9ze11undxzn2zk",
+      "name": "微信读书",
+      "url": "https://weread.qq.com",
+      "icon": "wechat",
+      "type": "web",
+      "iconType": "favicon",
+      "faviconUrl": "https://weread.qq.com/favicon.ico"
+    },
+    {
+      "id": "demo_shortcut_1",
+      "name": "Google",
+      "url": "https://google.com",
+      "icon": "google",
+      "type": "web",
+      "iconType": "favicon",
+      "faviconUrl": "https://icon.horse/icon/google.com",
+      "customIconPath": null
+    },
+    {
+      "id": "demo_shortcut_2",
+      "name": "GitHub",
+      "url": "https://github.com",
+      "icon": "github",
+      "type": "web",
+      "iconType": "favicon",
+      "faviconUrl": "https://github.com/favicon.ico"
+    },
+    {
+      "id": "mo2lmavl0rwunlkkccd",
+      "name": "z-library",
+      "url": "https://zh.z-library.sk/",
+      "icon": "default",
+      "type": "web",
+      "iconType": "favicon",
+      "faviconUrl": "https://icon.horse/icon/zh.z-library.sk"
+    },
+    {
+      "id": "mo9jgd9ns11kzd8jdw",
+      "name": "Figma",
+      "url": "https://figma.com",
+      "icon": "figma",
+      "type": "web",
+      "iconType": "favicon",
+      "faviconUrl": "https://www.google.com/s2/favicons?domain=figma.com&sz=64"
+    }
+  ],
+  "pomodoroSettings": {
+    "workDuration": 25,
+    "shortBreak": 5,
+    "longBreak": 15,
+    "longBreakInterval": 4,
+    "targetCount": 2,
+    "soundEnabled": true,
+    "soundVolume": 25,
+    "sounds": [
+      {
+        "id": "qing",
+        "name": "磬声（默认）",
+        "type": "preset",
+        "file": "sounds/qing.wav"
+      }
+    ],
+    "selectedSoundId": "qing"
+  },
+  "pomodoroRecords": [
+    {
+      "date": "2026-04-17",
+      "completed": 12
+    },
+    {
+      "date": "2026-04-18",
+      "completed": 8
+    }
+  ],
+  "memos": [
+    {
+      "id": "mo2luxb6y14emxgs2z",
+      "title": "日常",
+      "items": [
+        {
+          "id": "mo8y7526abt886cgq3n",
+          "title": "求职ing",
+          "content": "",
+          "createdAt": "2026-04-21T18:19:15.67Z",
+          "updatedAt": "2026-04-21T18:19:22.35Z",
+          "pinned": true
+        },
+        {
+          "id": "mo8y7am4ass6a9yajnt",
+          "title": "山色空蒙雨亦奇",
+          "content": "背景图为自己拍的雨后西湖",
+          "createdAt": "2026-04-21T18:19:22.875Z",
+          "updatedAt": "2026-04-22T04:10:42.27Z"
+        }
+      ],
+      "createdAt": "2026-04-17T07:47:13.31Z",
+      "updatedAt": "2026-04-22T04:10:42.27Z"
+    }
+  ],
+  "todosByDate": {
+    "2026-04-17": [
+      {
+        "id": "mo2lg5rd86kge0podd9",
+        "content": "日常",
+        "priority": "medium",
+        "completed": false,
+        "subtasks": [
+          {
+            "id": "mo2li45ytdk73rr5c5o",
+            "content": "练字",
+            "completed": false
+          },
+          {
+            "id": "mo2li6bcrsixyv48z6",
+            "content": "多邻国",
+            "completed": true
+          }
+        ],
+        "createdAt": "2026-04-17T07:35:44.42Z",
+        "updatedAt": "2026-04-17T16:05:23.49Z",
+        "order": 3
+      },
+      {
+        "id": "mo2lg7l9d1ml0z76yzn",
+        "content": "告诉聂老师",
+        "priority": "medium",
+        "completed": true,
+        "subtasks": [],
+        "createdAt": "2026-04-17T07:35:46.795Z",
+        "updatedAt": "2026-04-17T08:12:08.97Z",
+        "order": 9
+      },
+      {
+        "id": "mo2lgaw5vv9t916c7xh",
+        "content": "打车费报销",
+        "priority": "low",
+        "completed": true,
+        "subtasks": [],
+        "createdAt": "2026-04-17T07:35:51.075Z",
+        "updatedAt": "2026-04-17T07:44:25.45Z",
+        "order": 10
+      },
+      {
+        "id": "mo2lgfom6sgfqqi94pt",
+        "content": "咖啡购买，聊天",
+        "priority": "low",
+        "completed": true,
+        "subtasks": [],
+        "createdAt": "2026-04-17T07:35:57.285Z",
+        "updatedAt": "2026-04-17T07:40:42.23Z",
+        "order": 11
+      },
+      {
+        "id": "mo2lgs2ebqr8kq5o24p",
+        "content": "飞书报名",
+        "priority": "high",
+        "completed": false,
+        "subtasks": [],
+        "createdAt": "2026-04-17T07:36:13.33Z",
+        "updatedAt": "2026-04-17T07:37:03.965Z",
+        "order": 2
+      },
+      {
+        "id": "mo2lh35db2u94psy34b",
+        "content": "AI产品完成",
+        "priority": "high",
+        "completed": false,
+        "subtasks": [],
+        "createdAt": "2026-04-17T07:36:27.695Z",
+        "updatedAt": "2026-04-17T07:36:57.12Z",
+        "order": 0
+      },
+      {
+        "id": "mo2lhatefr0t5421m0v",
+        "content": "简历修改",
+        "priority": "high",
+        "completed": false,
+        "subtasks": [
+          {
+            "id": "mo32422uztaua8ueh4g",
+            "content": "coze初步讨论",
+            "completed": false
+          },
+          {
+            "id": "mo324ha7so6hdfbkiq",
+            "content": "coze询问，AI简历修改平台寻找",
+            "completed": false
+          }
+        ],
+        "createdAt": "2026-04-17T07:36:37.63Z",
+        "updatedAt": "2026-04-17T15:22:32.955Z",
+        "order": 1
+      },
+      {
+        "id": "mo2lig6mywlht0bd5q",
+        "content": "工作台完善",
+        "priority": "medium",
+        "completed": true,
+        "subtasks": [
+          {
+            "id": "mo2ljmmxczmqvwakjza",
+            "content": "提示音量修改",
+            "completed": true
+          },
+          {
+            "id": "mo2ljry1vpkdro4fca",
+            "content": "常用工具顺序移动",
+            "completed": true
+          },
+          {
+            "id": "mo2llt79b5xjmws15bp",
+            "content": "常用工具可加文件夹分类",
+            "completed": true
+          },
+          {
+            "id": "mo2m0hudiz5ys31jv6i",
+            "content": "备忘录要有置顶以及拖动更改顺序功能",
+            "completed": true
+          },
+          {
+            "id": "mo2m31a4lykttvq2tlk",
+            "content": "交互逻辑：待办事项里的每一项的子任务，应能单击修改，双击完成",
+            "completed": true
+          },
+          {
+            "id": "mo2mhdnley02nunblgj",
+            "content": "确认一下页面切出后，番茄钟的时间流逝是否正常",
+            "completed": true
+          },
+          {
+            "id": "mo2mic3xsdw3ssrkk0c",
+            "content": "子任务添加应该是点击框外任意区域便保存，而不是一定要按回车",
+            "completed": true
+          },
+          {
+            "id": "mo2mjikilbcix88g1o",
+            "content": "子任务当有三行及以上时，上下间隔适度增大，以免观感混乱。",
+            "completed": true
+          },
+          {
+            "id": "mo3290mpa650w74kfi7",
+            "content": "待办事宜这里子任务右边留的空白太多，没必要，过度换行",
+            "completed": true
+          },
+          {
+            "id": "mo3wofpm3kofim4tnqe",
+            "content": "光标应该在能修改且被选中的地方才显现",
+            "completed": true
+          },
+          {
+            "id": "mo3yexavr8eta4max1f",
+            "content": "在编辑已添加的常用工具时，自动抓取功能未被屏蔽",
+            "completed": true
+          },
+          {
+            "id": "mo3yfsrkr0nwoy2ma6a",
+            "content": "待办事宜增加复制功能，以便未完成的事宜可以直接迁移到第二天",
+            "completed": true
+          }
+        ],
+        "createdAt": "2026-04-17T07:37:31.245Z",
+        "updatedAt": "2026-04-20T03:35:06.1Z",
+        "order": 6
+      },
+      {
+        "id": "mo2n3eih8wxuellqlw5",
+        "content": "买个牙线",
+        "priority": "low",
+        "completed": true,
+        "subtasks": [],
+        "createdAt": "2026-04-17T08:21:48.47Z",
+        "updatedAt": "2026-04-20T03:35:11.95Z",
+        "order": 5
+      },
+      {
+        "id": "mo2oo6vrlbk5syah2w",
+        "content": "买个便携香插送姨丈",
+        "priority": "medium",
+        "completed": false,
+        "subtasks": [
+          {
+            "id": "mo2q2s04wruwmsmyc5",
+            "content": "问哥地址",
+            "completed": false
+          }
+        ],
+        "createdAt": "2026-04-17T09:05:57.975Z",
+        "updatedAt": "2026-04-17T09:45:18.145Z",
+        "order": 4
+      },
+      {
+        "id": "mo2q0a3l2wcvsnf1lsp",
+        "content": "相机充电，整理内存，准备明天录课",
+        "priority": "medium",
+        "completed": true,
+        "subtasks": [],
+        "createdAt": "2026-04-17T09:43:21.63Z",
+        "updatedAt": "2026-04-17T16:05:14.375Z",
+        "order": 8
+      },
+      {
+        "id": "mo2q26d8zu8ivib2jvh",
+        "content": "联系爸了解一下具体情况",
+        "priority": "low",
+        "completed": true,
+        "subtasks": [],
+        "createdAt": "2026-04-17T09:44:50.108Z",
+        "updatedAt": "2026-04-17T16:05:18.96Z",
+        "order": 7
+      }
+    ],
+    "2026-04-14": [],
+    "2026-04-16": [],
+    "2026-04-18": [
+      {
+        "id": "mo2zgxo65095mkq27l3",
+        "content": "1.把陶瓷寄家，和姐说这个礼物",
+        "priority": "low",
+        "completed": false,
+        "subtasks": [],
+        "createdAt": "2026-04-17T14:08:15.22Z",
+        "updatedAt": "2026-04-17T14:08:15.22Z",
+        "order": 0
+      },
+      {
+        "id": "mo3y19m89qvvdxp3lg6",
+        "content": "AI产品",
+        "priority": "medium",
+        "completed": false,
+        "subtasks": [
+          {
+            "id": "mo3y1z5byqnc5eih6lm",
+            "content": "整理实现思路，试验",
+            "completed": false
+          }
+        ],
+        "createdAt": "2026-04-18T06:15:50.765Z",
+        "updatedAt": "2026-04-18T06:16:23.85Z",
+        "order": 1
+      },
+      {
+        "id": "mo3y1hcahyt4w4lsdkr",
+        "content": "送聂老师东西，聊天",
+        "priority": "medium",
+        "completed": true,
+        "subtasks": [],
+        "createdAt": "2026-04-18T06:16:00.775Z",
+        "updatedAt": "2026-04-20T03:34:48.055Z",
+        "order": 5
+      },
+      {
+        "id": "mo3y1lf18icl754yd6g",
+        "content": "简历修改",
+        "priority": "medium",
+        "completed": false,
+        "subtasks": [],
+        "createdAt": "2026-04-18T06:16:06.06Z",
+        "updatedAt": "2026-04-18T06:16:06.06Z",
+        "order": 2
+      },
+      {
+        "id": "mo3y2qfjp0niw2o0omk",
+        "content": "买随身香盒送姨丈",
+        "priority": "medium",
+        "completed": false,
+        "subtasks": [],
+        "createdAt": "2026-04-18T06:16:59.215Z",
+        "updatedAt": "2026-04-18T06:16:59.215Z",
+        "order": 3
+      },
+      {
+        "id": "mo3y34qwec2uoqlj4ya",
+        "content": "整理控烟三图片大全",
+        "priority": "medium",
+        "completed": true,
+        "subtasks": [],
+        "createdAt": "2026-04-18T06:17:17.765Z",
+        "updatedAt": "2026-04-20T03:34:52.23Z",
+        "order": 4
+      }
+    ],
+    "2026-04-15": [],
+    "2026-04-20": [
+      {
+        "id": "mo6n3uxce0qes2esjne",
+        "content": "告诉姐东西",
+        "priority": "medium",
+        "completed": false,
+        "subtasks": [],
+        "createdAt": "2026-04-20T03:33:14.445Z",
+        "updatedAt": "2026-04-20T03:35:45.14Z",
+        "order": 1
+      },
+      {
+        "id": "mo6n44mogldthjgv33p",
+        "content": "简历修改完成",
+        "priority": "medium",
+        "completed": false,
+        "subtasks": [],
+        "createdAt": "2026-04-20T03:33:27.02Z",
+        "updatedAt": "2026-04-20T03:33:27.02Z",
+        "order": 2
+      },
+      {
+        "id": "mo6n46qlnrhg5m85ab8",
+        "content": "开始投简历",
+        "priority": "medium",
+        "completed": false,
+        "subtasks": [],
+        "createdAt": "2026-04-20T03:33:29.755Z",
+        "updatedAt": "2026-04-20T03:33:45.5Z",
+        "order": 3
+      },
+      {
+        "id": "mo6n4th3x1tepxl502r",
+        "content": "冥想",
+        "priority": "medium",
+        "completed": false,
+        "subtasks": [],
+        "createdAt": "2026-04-20T03:33:59.22Z",
+        "updatedAt": "2026-04-20T03:33:59.22Z",
+        "order": 4
+      },
+      {
+        "id": "mo6n5jyn4mkearrek5j",
+        "content": "买香",
+        "priority": "medium",
+        "completed": false,
+        "subtasks": [],
+        "createdAt": "2026-04-20T03:34:33.55Z",
+        "updatedAt": "2026-04-20T03:34:33.55Z",
+        "order": 5
+      },
+      {
+        "id": "mo6n65fyeoifsqvsts",
+        "content": "简历修改",
+        "priority": "high",
+        "completed": false,
+        "createdAt": "2026-04-20T03:35:01.385Z",
+        "updatedAt": "2026-04-20T03:35:01.385Z",
+        "subtasks": [
+          {
+            "id": "mo6n65fyh6fhiv3fvdq",
+            "content": "coze初步讨论",
+            "completed": false
+          },
+          {
+            "id": "mo6n65fyncubkn0btza",
+            "content": "coze询问，AI简历修改平台寻找",
+            "completed": false
+          }
+        ],
+        "order": 0
+      }
+    ],
+    "2026-04-21": [
+      {
+        "id": "mo8xnvb11cdsh9pifkfj",
+        "content": "123",
+        "priority": "medium",
+        "completed": false,
+        "subtasks": [],
+        "createdAt": "2026-04-21T18:04:16.57Z",
+        "updatedAt": "2026-04-21T18:20:27.415Z",
+        "order": 0
+      },
+      {
+        "id": "mo8xnvu1st6bfaps5r",
+        "content": "123",
+        "priority": "medium",
+        "completed": false,
+        "subtasks": [],
+        "createdAt": "2026-04-21T18:04:17.255Z",
+        "updatedAt": "2026-04-21T18:20:58.89Z",
+        "order": 1
+      }
+    ],
+    "2026-04-22": [
+      {
+        "id": "mo9je5965nxoidjng4e",
+        "content": "求职ing",
+        "priority": "medium",
+        "completed": false,
+        "subtasks": [
+          {
+            "id": "mo9jf9kj1takb4pf4bs",
+            "content": "网站上线",
+            "completed": true
+          },
+          {
+            "id": "mo9jfij648gsxesr68n",
+            "content": "简历修改",
+            "completed": true
+          },
+          {
+            "id": "mo9jfp215vkuuoo2kvl",
+            "content": "简历投递",
+            "completed": false
+          }
+        ],
+        "createdAt": "2026-04-22T04:12:34.455Z",
+        "updatedAt": "2026-04-22T04:13:56.98Z",
+        "order": 0
+      }
+    ],
+    "2026-04-23": [],
+    "2026-04-24": [],
+    "2026-04-25": [],
+    "2026-04-19": [
+      {
+        "id": "mo5aho12jjm1fisvmer",
+        "content": "1.陶瓷寄家",
+        "priority": "medium",
+        "completed": true,
+        "subtasks": [],
+        "createdAt": "2026-04-19T04:52:17.51Z",
+        "updatedAt": "2026-04-19T06:02:27.275Z",
+        "order": 0
+      },
+      {
+        "id": "mo5ahqv8vzfvft764d",
+        "content": "买毛巾",
+        "priority": "medium",
+        "completed": true,
+        "subtasks": [],
+        "createdAt": "2026-04-19T04:52:21.185Z",
+        "updatedAt": "2026-04-19T06:02:25.715Z",
+        "order": 2
+      },
+      {
+        "id": "mo5ahs79te74jyzo1d",
+        "content": "买牙线",
+        "priority": "medium",
+        "completed": true,
+        "subtasks": [],
+        "createdAt": "2026-04-19T04:52:22.915Z",
+        "updatedAt": "2026-04-19T06:02:26.085Z",
+        "order": 1
+      }
+    ]
+  },
+  "settings": {
+    "backgroundPath": "西湖烟雨.jpg"
+  }
+}

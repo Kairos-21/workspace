@@ -16,7 +16,8 @@ let currentTime = 25 * 60; // 秒
 let totalTime = 25 * 60;
 let timer = null;
 let completedPomodoros = 0;
-let lastTickTime = null; // 上次计时的时间戳，用于计算真实流逝时间
+let startTimeStamp = null; // 开始计时的时间戳
+let initialTimeAtStart = 0; // 开始计时时的初始时间（秒）
 
 // 音频上下文
 let audioContext = null;
@@ -557,25 +558,23 @@ function toggleSettingsPanel() {
  * 计时器滴答函数
  */
 function tick() {
-    const now = Date.now();
+    if (startTimeStamp === null) return;
     
-    if (lastTickTime !== null) {
-        // 计算真实流逝的秒数
-        const elapsedSeconds = Math.floor((now - lastTickTime) / 1000);
-        if (elapsedSeconds > 0) {
-            currentTime -= elapsedSeconds;
-            updatePomodoroDisplay();
-            
-            if (currentTime <= 0) {
-                currentTime = 0;
-                updatePomodoroDisplay();
-                completePomodoro();
-                return;
-            }
+    const now = Date.now();
+    const elapsedMs = now - startTimeStamp;
+    const elapsedSeconds = Math.floor(elapsedMs / 1000);
+    
+    // 计算剩余时间
+    const newRemainingTime = Math.max(0, initialTimeAtStart - elapsedSeconds);
+    
+    if (newRemainingTime !== currentTime) {
+        currentTime = newRemainingTime;
+        updatePomodoroDisplay();
+        
+        if (currentTime <= 0) {
+            completePomodoro();
         }
     }
-    
-    lastTickTime = now;
 }
 
 /**
@@ -628,9 +627,10 @@ function startPomodoro() {
     
     pomodoroStartBtnEl.textContent = '⏸ 暂停';
     
-    // 初始化时间戳并开始计时
-    lastTickTime = Date.now();
-    timer = setInterval(tick, 1000);
+    // 记录开始时间和初始时间
+    startTimeStamp = Date.now();
+    initialTimeAtStart = currentTime;
+    timer = setInterval(tick, 100); // 100ms更新一次，更流畅
 }
 
 /**
@@ -641,7 +641,8 @@ function pausePomodoro() {
         clearInterval(timer);
         timer = null;
     }
-    lastTickTime = null; // 清除时间戳
+    startTimeStamp = null; // 清除时间戳
+    initialTimeAtStart = 0;
     pomodoroState = PomodoroState.PAUSED;
     pomodoroStartBtnEl.textContent = '▶ 继续';
 }
@@ -654,7 +655,8 @@ function resetPomodoro() {
         clearInterval(timer);
         timer = null;
     }
-    lastTickTime = null; // 清除时间戳
+    startTimeStamp = null; // 清除时间戳
+    initialTimeAtStart = 0;
     pomodoroState = PomodoroState.IDLE;
     completedPomodoros = 0;
     const settings = window.appData.pomodoroSettings;
@@ -677,7 +679,8 @@ function completePomodoro() {
         clearInterval(timer);
         timer = null;
     }
-    lastTickTime = null; // 清除时间戳
+    startTimeStamp = null; // 清除时间戳
+    initialTimeAtStart = 0;
     
     const settings = window.appData.pomodoroSettings;
     
@@ -721,8 +724,9 @@ function completePomodoro() {
             pomodoroStartBtnEl.textContent = '⏸ 暂停';
             
             // 自动开始下一个番茄钟
-            lastTickTime = Date.now();
-            timer = setInterval(tick, 1000);
+            startTimeStamp = Date.now();
+            initialTimeAtStart = currentTime;
+            timer = setInterval(tick, 100);
             window.showToast('⏩ 跳过休息，开始下一个番茄钟');
         } else {
             // 开始休息
@@ -735,8 +739,9 @@ function completePomodoro() {
             pomodoroStartBtnEl.textContent = '⏸ 暂停';
             
             // 自动开始休息计时
-            lastTickTime = Date.now();
-            timer = setInterval(tick, 1000);
+            startTimeStamp = Date.now();
+            initialTimeAtStart = currentTime;
+            timer = setInterval(tick, 100);
         }
     } else {
         // 休息完成
@@ -756,8 +761,9 @@ function completePomodoro() {
         pomodoroStartBtnEl.textContent = '⏸ 暂停';
         
         // 自动开始下一个番茄钟
-        lastTickTime = Date.now();
-        timer = setInterval(tick, 1000);
+        startTimeStamp = Date.now();
+        initialTimeAtStart = currentTime;
+        timer = setInterval(tick, 100);
     }
     
     updatePomodoroDisplay();
