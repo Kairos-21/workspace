@@ -22,6 +22,9 @@ let initialTimeAtStart = 0; // 开始计时时的初始时间（秒）
 // 音频上下文
 let audioContext = null;
 
+// 预加载的音频对象缓存
+let audioCache = {};
+
 // 当前播放的音频
 let currentPlayingAudio = null;
 let currentPlayingBtnId = null;
@@ -168,12 +171,16 @@ function initPomodoroModule() {
                         settings.sounds = [...Object.entries(PRESET_SOUNDS).map(([id, s]) => ({ id, ...s }))];
                     }
                     
-                    settings.sounds.push({
+                    const newSound = {
                         id: data.data.id,
                         name: data.data.originalName.replace(/\.[^.]+$/, ''), // 去掉扩展名
                         type: 'custom',
                         path: data.data.path
-                    });
+                    };
+                    settings.sounds.push(newSound);
+                    
+                    // 预加载新上传的提示音
+                    preloadAllSounds([newSound]);
                     
                     // 保存并刷新列表
                     savePomodoroSettings();
@@ -254,6 +261,9 @@ function loadPomodoroSettings() {
     
     window.appData.pomodoroSettings = settings;
     
+    // 预加载所有提示音
+    preloadAllSounds(settings.sounds);
+    
     // 更新滑块值
     workDurationEl.value = settings.workDuration;
     shortBreakEl.value = settings.shortBreak;
@@ -285,6 +295,27 @@ function loadPomodoroSettings() {
     totalCountEl.textContent = settings.targetCount || 4;
     
     updatePomodoroDisplay();
+}
+
+/**
+ * 预加载所有提示音
+ */
+function preloadAllSounds(sounds) {
+    sounds.forEach(sound => {
+        const filePath = sound.type === 'preset' ? sound.file : sound.path;
+        if (filePath && !audioCache[filePath]) {
+            // 确保路径正确
+            let fullPath = filePath;
+            if (!filePath.startsWith('http') && !filePath.startsWith('/')) {
+                fullPath = '/' + filePath;
+            }
+            // 创建音频对象并预加载
+            const audio = new Audio(fullPath);
+            audio.preload = 'auto';
+            audioCache[filePath] = audio;
+            console.log('🔊 预加载提示音:', fullPath);
+        }
+    });
 }
 
 /**
@@ -468,25 +499,50 @@ function playSoundById(soundId, btn) {
     const filePath = sound.type === 'preset' ? sound.file : sound.path;
     if (!filePath) return;
     
-    // 创建新的音频实例
-    currentPlayingAudio = new Audio(filePath);
-    currentPlayingAudio.volume = (settings.soundVolume || 80) / 100; // 使用设置中的音量
+    // 确保路径正确
+    let fullPath = filePath;
+    if (!filePath.startsWith('http') && !filePath.startsWith('/')) {
+        fullPath = '/' + filePath;
+    }
+    
+    // 优先使用预加载的音频对象
+    let audio = audioCache[fullPath];
+    
+    if (!audio) {
+        // 如果缓存中没有，创建新的音频对象
+        audio = new Audio(fullPath);
+        audio.preload = 'auto';
+        audioCache[fullPath] = audio;
+    } else {
+        // 如果正在播放，先暂停
+        if (!audio.paused) {
+            audio.pause();
+            audio.currentTime = 0;
+            stopCurrentAudio();
+            renderSoundList();
+            return;
+        }
+        audio.currentTime = 0;
+    }
+    
+    currentPlayingAudio = audio;
     currentPlayingBtnId = soundId;
+    audio.volume = (settings.soundVolume || 80) / 100;
     
     // 播放结束后更新按钮状态
-    currentPlayingAudio.onended = () => {
+    audio.onended = () => {
         stopCurrentAudio();
         renderSoundList();
     };
     
-    currentPlayingAudio.onerror = () => {
+    audio.onerror = () => {
         stopCurrentAudio();
         renderSoundList();
         window.showToast('播放失败');
     };
     
     // 播放
-    currentPlayingAudio.play().catch(err => {
+    audio.play().catch(err => {
         console.error('播放失败:', err);
         stopCurrentAudio();
         renderSoundList();
@@ -854,9 +910,28 @@ function playAudioFile(filePath) {
         fullPath = '/' + filePath;
     }
     
-    const audio = new Audio(fullPath);
+    // 优先使用预加载的音频对象
+    let audio = audioCache[fullPath];
+    
+    if (!audio) {
+        // 如果缓存中没有，创建新的音频对象
+        audio = new Audio(fullPath);
+        audio.preload = 'auto';
+        audioCache[fullPath] = audio;
+    } else {
+        // 重置播放位置（重要！否则第二次播放会没有声音）
+        audio.currentTime = 0;
+    }
+    
     audio.volume = volume;
-    audio.play().catch(e => console.log('播放失败:', e));
+    audio.play().catch(e => {
+        console.log('播放失败:', e);
+        // 如果播放失败，尝试重新创建音频对象
+        delete audioCache[fullPath];
+        const backupAudio = new Audio(fullPath);
+        backupAudio.volume = volume;
+        backupAudio.play().catch(err => console.log('备用播放也失败:', err));
+    });
 }
 
 // HTML 转义函数
