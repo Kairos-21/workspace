@@ -714,30 +714,44 @@ function showAddFolderModal() {
         document.getElementById('folderIconPreviewLarge').textContent = e.target.value || '📁';
     };
     
-    // 图标上传（前端处理）
+    // 图标上传（调用后端 API）
     document.getElementById('folderIconFile').onchange = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
         
         const preview = document.getElementById('folderIconPreview');
         preview.style.display = 'flex';
-        preview.innerHTML = '<span style="color: var(--text-secondary);">处理中...</span>';
+        preview.innerHTML = '<span style="color: var(--text-secondary);">上传中...</span>';
         
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            customIconPath = event.target.result;
-            preview.innerHTML = `
-                <div class="uploaded-icon-wrapper">
-                    <img src="${event.target.result}" class="uploaded-icon-img">
-                    <span class="uploaded-icon-name">${file.name}</span>
-                </div>
-            `;
-            window.showToast(`已选择: ${file.name}`);
-        };
-        reader.onerror = () => {
-            preview.innerHTML = '<span style="color: #e74c3c;">处理失败</span>';
-        };
-        reader.readAsDataURL(file);
+        try {
+            // 调用后端 API 上传图标
+            const formData = new FormData();
+            formData.append('icon', file);
+            
+            const response = await fetch(`${API_BASE}/api/upload-icon`, {
+                method: 'POST',
+                body: formData
+            });
+            
+            const result = await response.json();
+            
+            if (result.success && result.data && result.data.url) {
+                customIconPath = result.data.url;
+                preview.innerHTML = `
+                    <div class="uploaded-icon-wrapper">
+                        <img src="${result.data.url}" class="uploaded-icon-img">
+                        <span class="uploaded-icon-name">${file.name}</span>
+                    </div>
+                `;
+                window.showToast(`已上传: ${file.name}`);
+            } else {
+                throw new Error(result.message || '上传失败');
+            }
+        } catch (err) {
+            console.error('图标上传失败:', err);
+            preview.innerHTML = '<span style="color: #e74c3c;">上传失败</span>';
+            window.showToast('上传失败，请重试');
+        }
     };
     
     document.getElementById('addFolderCancel').onclick = closeModal;
@@ -903,30 +917,44 @@ function showEditFolderModal(id) {
         document.getElementById('editFolderIconPreviewLarge').textContent = e.target.value || '📁';
     };
     
-    // 图标上传（前端处理）
+    // 图标上传（调用后端 API）
     document.getElementById('editFolderIconFile').onchange = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
         
         const preview = document.getElementById('editFolderIconPreview');
         preview.style.display = 'flex';
-        preview.innerHTML = '<span style="color: var(--text-secondary);">处理中...</span>';
+        preview.innerHTML = '<span style="color: var(--text-secondary);">上传中...</span>';
         
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            customIconPath = event.target.result;
-            preview.innerHTML = `
-                <div class="uploaded-icon-wrapper">
-                    <img src="${event.target.result}" class="uploaded-icon-img">
-                    <span class="uploaded-icon-name">${file.name}</span>
-                </div>
-            `;
-            window.showToast(`已选择: ${file.name}`);
-        };
-        reader.onerror = () => {
-            preview.innerHTML = '<span style="color: #e74c3c;">处理失败</span>';
-        };
-        reader.readAsDataURL(file);
+        try {
+            // 调用后端 API 上传图标
+            const formData = new FormData();
+            formData.append('icon', file);
+            
+            const response = await fetch(`${API_BASE}/api/upload-icon`, {
+                method: 'POST',
+                body: formData
+            });
+            
+            const result = await response.json();
+            
+            if (result.success && result.data && result.data.url) {
+                customIconPath = result.data.url;
+                preview.innerHTML = `
+                    <div class="uploaded-icon-wrapper">
+                        <img src="${result.data.url}" class="uploaded-icon-img">
+                        <span class="uploaded-icon-name">${file.name}</span>
+                    </div>
+                `;
+                window.showToast(`已上传: ${file.name}`);
+            } else {
+                throw new Error(result.message || '上传失败');
+            }
+        } catch (err) {
+            console.error('图标上传失败:', err);
+            preview.innerHTML = '<span style="color: #e74c3c;">上传失败</span>';
+            window.showToast('上传失败，请重试');
+        }
     };
     
     document.getElementById('editFolderCancel').onclick = closeModal;
@@ -1256,19 +1284,32 @@ function showAddShortcutModal() {
             const preview = document.getElementById('customIconPreview');
             if (!preview) return;
             
-            preview.innerHTML = '<span style="color: var(--text-secondary);">⏳ 处理中...</span>';
+            preview.innerHTML = '<span style="color: var(--text-secondary);">⏳ 上传中...</span>';
             
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                currentCustomIconPath = event.target.result;
-                preview.innerHTML = `<img src="${event.target.result}" style="width:48px;height:48px;border-radius:8px;object-fit:contain;">`;
-                window.showToast(`✓ 已选择: ${file.name}`);
-            };
-            reader.onerror = () => {
-                preview.innerHTML = '<span style="color: var(--text-secondary); font-size: 0.85rem;">❌ 处理失败</span>';
-                window.showToast('处理失败');
-            };
-            reader.readAsDataURL(file);
+            try {
+                // 调用后端 API 上传图标
+                const formData = new FormData();
+                formData.append('icon', file);
+                
+                const response = await fetch(`${API_BASE}/api/upload-icon`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success && result.data && result.data.url) {
+                    currentCustomIconPath = result.data.url;
+                    preview.innerHTML = `<img src="${result.data.url}" style="width:48px;height:48px;border-radius:8px;object-fit:contain;">`;
+                    window.showToast(`✓ 已上传: ${file.name}`);
+                } else {
+                    throw new Error(result.message || '上传失败');
+                }
+            } catch (err) {
+                console.error('图标上传失败:', err);
+                preview.innerHTML = '<span style="color: var(--text-secondary); font-size: 0.85rem;">❌ 上传失败</span>';
+                window.showToast('上传失败，请重试');
+            }
         };
     }
     
@@ -1535,19 +1576,32 @@ function showEditShortcutModal(id) {
             const preview = document.getElementById('customIconPreview');
             if (!preview) return;
             
-            preview.innerHTML = '<span style="color: var(--text-secondary);">⏳ 处理中...</span>';
+            preview.innerHTML = '<span style="color: var(--text-secondary);">⏳ 上传中...</span>';
             
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                currentCustomIconPath = event.target.result;
-                preview.innerHTML = `<img src="${currentCustomIconPath}" style="width:48px;height:48px;border-radius:8px;object-fit:contain;">`;
-                window.showToast(`✓ 已选择: ${file.name}`);
-            };
-            reader.onerror = () => {
-                preview.innerHTML = '<span style="color: var(--text-secondary); font-size: 0.85rem;">❌ 处理失败</span>';
-                window.showToast('处理失败');
-            };
-            reader.readAsDataURL(file);
+            try {
+                // 调用后端 API 上传图标
+                const formData = new FormData();
+                formData.append('icon', file);
+                
+                const response = await fetch(`${API_BASE}/api/upload-icon`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success && result.data && result.data.url) {
+                    currentCustomIconPath = result.data.url;
+                    preview.innerHTML = `<img src="${result.data.url}" style="width:48px;height:48px;border-radius:8px;object-fit:contain;">`;
+                    window.showToast(`✓ 已上传: ${file.name}`);
+                } else {
+                    throw new Error(result.message || '上传失败');
+                }
+            } catch (err) {
+                console.error('图标上传失败:', err);
+                preview.innerHTML = '<span style="color: var(--text-secondary); font-size: 0.85rem;">❌ 上传失败</span>';
+                window.showToast('上传失败，请重试');
+            }
         };
     }
     

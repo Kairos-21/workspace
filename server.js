@@ -405,11 +405,34 @@ function fetchHtmlFavicon(origin, maxRedirects = 5) {
 /**
  * 上传自定义图标
  */
-app.post('/api/upload-icon', (req, res) => {
-    res.status(501).json({
-        success: false,
-        message: '图标上传已完全迁移到前端，请在浏览器中操作'
-    });
+app.post('/api/upload-icon', iconUpload.single('icon'), (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: '没有上传文件'
+            });
+        }
+        
+        const iconUrl = `/uploads/icons/${req.file.filename}`;
+        console.log('[Upload] 图标上传成功:', iconUrl);
+        
+        res.json({
+            success: true,
+            data: {
+                filename: req.file.filename,
+                url: iconUrl,
+                size: req.file.size
+            },
+            message: '图标上传成功'
+        });
+    } catch (err) {
+        console.error('[Upload] 图标上传失败:', err);
+        res.status(500).json({
+            success: false,
+            message: '图标上传失败'
+        });
+    }
 });
 
 /**
