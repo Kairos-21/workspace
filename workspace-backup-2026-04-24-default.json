@@ -88,29 +88,29 @@
       "url": "feishu://",
       "icon": "default",
       "type": "app",
-      "iconType": "default",
+      "iconType": "custom",
       "faviconUrl": null,
-      "customIconPath": null
+      "customIconPath": "icons/app-飞书.jpg"
     },
     {
       "id": "mo2lko7pbacmd9qsbfp",
       "name": "微信",
       "url": "weixin://",
-      "icon": "default",
+      "icon": "wechat",
       "type": "app",
-      "iconType": "default",
+      "iconType": "custom",
       "faviconUrl": null,
-      "customIconPath": null
+      "customIconPath": "icons/app-微信.jpg"
     },
     {
       "id": "mo2lkwir36gbn5qexmr",
       "name": "QQ",
       "url": "tencent://",
-      "icon": "default",
+      "icon": "figma",
       "type": "app",
-      "iconType": "default",
+      "iconType": "custom",
       "faviconUrl": null,
-      "customIconPath": null
+      "customIconPath": "icons/app-QQ.jpg"
     },
     {
       "id": "mo2lj9ze11undxzn2zk",
