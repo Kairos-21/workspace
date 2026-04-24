@@ -275,7 +275,8 @@ function renderMultiDayBars(days) {
         
         // 计算位置和宽度
         const left = startOffset * (cellWidth + gap);
-        const width = (endOffset - startOffset + 1) * cellWidth + endOffset * gap;
+        const numDays = endOffset - startOffset + 1;
+        const width = numDays * cellWidth + (numDays - 1) * gap;
         
         // 获取优先级信息
         const priority = PRIORITIES[schedule.priority] || PRIORITIES.medium;
