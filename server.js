@@ -98,7 +98,7 @@ function getDefaultData() {
   const fs = require('fs');
   const path = require('path');
   try {
-    const dataPath = path.join(__dirname, 'workspace-backup-2026-04-22-default.json');
+    const dataPath = path.join(__dirname, 'workspace-backup-2026-04-24-default.json');
     const dataContent = fs.readFileSync(dataPath, 'utf8');
     return JSON.parse(dataContent);
   } catch (err) {

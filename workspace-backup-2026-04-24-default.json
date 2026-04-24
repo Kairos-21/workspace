@@ -1,0 +1,360 @@
+{
+  "todos": [],
+  "schedules": [
+    {
+      "id": "mocjzwi3ypbdizmpg9",
+      "title": "求职ing",
+      "date": "2026-04-24",
+      "endDate": "2026-04-28",
+      "startTime": "14:52",
+      "endTime": "",
+      "priority": "high",
+      "category": "工作",
+      "color": "#3498DB",
+      "description": "",
+      "createdAt": "2026-04-24T06:52:48.075Z"
+    }
+  ],
+  "shortcuts": [
+    {
+      "id": "mo6mhius1q9zuh2puza",
+      "name": "AI",
+      "icon": "📁",
+      "type": "folder",
+      "displayMode": "preview",
+      "children": [
+        {
+          "id": "mo8xmb76zhh0z9bs3ng",
+          "name": "chatgpt",
+          "url": "https://chatgpt.com/zh-CN/",
+          "icon": "default",
+          "type": "web",
+          "iconType": "favicon",
+          "faviconUrl": "https://icon.horse/icon/chatgpt.com"
+        },
+        {
+          "id": "mo8xmlgpseuece5iy7k",
+          "name": "meta",
+          "url": "https://metaso.cn/?s=sbypcpz&referrer_s=sbypcpz",
+          "icon": "default",
+          "type": "web",
+          "iconType": "favicon",
+          "faviconUrl": "https://metaso.cn/favicon.ico"
+        },
+        {
+          "id": "mo8xmwcle1ryh3kgajg",
+          "name": "yuanbao",
+          "url": "https://yuanbao.tencent.com/chat/naQivTmsDa",
+          "icon": "default",
+          "type": "web",
+          "iconType": "favicon",
+          "faviconUrl": "https://yuanbao.tencent.com/favicon.ico"
+        },
+        {
+          "id": "mo8y5xzx3fbgxav4gaw",
+          "name": "aistudio",
+          "url": "https://aistudio.google.com/?pli=1",
+          "icon": "default",
+          "type": "web",
+          "iconType": "favicon",
+          "faviconUrl": "https://www.google.com/s2/favicons?domain=aistudio.google.com&sz=64"
+        }
+      ],
+      "createdAt": "2026-04-20T03:15:52.37Z",
+      "iconType": "default"
+    },
+    {
+      "id": "mo411ec948rqdu39uts",
+      "name": "coze",
+      "url": "https://www.coze.cn/",
+      "icon": "default",
+      "type": "web",
+      "iconType": "favicon",
+      "faviconUrl": "https://lf-coze-web-cdn.coze.cn/obj/coze-web-cn/coze-space/static/favicon2.ico",
+      "customIconPath": null
+    },
+    {
+      "id": "demo_shortcut_3",
+      "name": "Bilibili",
+      "url": "https://bilibili.com",
+      "icon": "bilibili",
+      "type": "web",
+      "iconType": "favicon",
+      "faviconUrl": "https://www.bilibili.com/favicon.ico"
+    },
+    {
+      "id": "mo2ll85o0e5y2ssu2zfm",
+      "name": "飞书",
+      "url": "feishu://",
+      "icon": "default",
+      "type": "app",
+      "iconType": "default",
+      "faviconUrl": null,
+      "customIconPath": null
+    },
+    {
+      "id": "mo2lko7pbacmd9qsbfp",
+      "name": "微信",
+      "url": "weixin://",
+      "icon": "default",
+      "type": "app",
+      "iconType": "default",
+      "faviconUrl": null,
+      "customIconPath": null
+    },
+    {
+      "id": "mo2lkwir36gbn5qexmr",
+      "name": "QQ",
+      "url": "tencent://",
+      "icon": "default",
+      "type": "app",
+      "iconType": "default",
+      "faviconUrl": null,
+      "customIconPath": null
+    },
+    {
+      "id": "mo2lj9ze11undxzn2zk",
+      "name": "微信读书",
+      "url": "https://weread.qq.com",
+      "icon": "wechat",
+      "type": "web",
+      "iconType": "favicon",
+      "faviconUrl": "https://weread.qq.com/favicon.ico"
+    },
+    {
+      "id": "demo_shortcut_1",
+      "name": "Google",
+      "url": "https://google.com",
+      "icon": "google",
+      "type": "web",
+      "iconType": "favicon",
+      "faviconUrl": "https://icon.horse/icon/google.com",
+      "customIconPath": null
+    },
+    {
+      "id": "demo_shortcut_2",
+      "name": "GitHub",
+      "url": "https://github.com",
+      "icon": "github",
+      "type": "web",
+      "iconType": "favicon",
+      "faviconUrl": "https://github.com/favicon.ico"
+    },
+    {
+      "id": "mo2lmavl0rwunlkkccd",
+      "name": "z-library",
+      "url": "https://zh.z-library.sk/",
+      "icon": "default",
+      "type": "web",
+      "iconType": "favicon",
+      "faviconUrl": "https://www.google.com/s2/favicons?domain=zh.z-library.sk&sz=64",
+      "customIconPath": null
+    },
+    {
+      "id": "mo9jgd9ns11kzd8jdw",
+      "name": "Figma",
+      "url": "https://figma.com",
+      "icon": "figma",
+      "type": "web",
+      "iconType": "favicon",
+      "faviconUrl": "https://www.google.com/s2/favicons?domain=figma.com&sz=64"
+    },
+    {
+      "id": "mockbgnbvvjruy2fx5o",
+      "name": "render",
+      "url": "https://dashboard.render.com/",
+      "icon": "default",
+      "type": "web",
+      "iconType": "favicon",
+      "faviconUrl": "https://www.google.com/s2/favicons?domain=dashboard.render.com&sz=64",
+      "customIconPath": null
+    },
+    {
+      "id": "mockd3m5fdw23apu105",
+      "name": "excalidraw",
+      "url": "https://excalidraw.com/",
+      "icon": "default",
+      "type": "web",
+      "iconType": "favicon",
+      "faviconUrl": "https://www.google.com/s2/favicons?domain=excalidraw.com&sz=64"
+    }
+  ],
+  "pomodoroSettings": {
+    "workDuration": 25,
+    "shortBreak": 5,
+    "longBreak": 15,
+    "longBreakInterval": 4,
+    "targetCount": 2,
+    "soundEnabled": true,
+    "soundVolume": 25,
+    "sounds": [
+      {
+        "id": "qing",
+        "name": "磬声（默认）",
+        "type": "preset",
+        "file": "sounds/qing.wav"
+      }
+    ],
+    "selectedSoundId": "qing"
+  },
+  "pomodoroRecords": [
+    {
+      "date": "2026-04-17",
+      "completed": 12
+    },
+    {
+      "date": "2026-04-18",
+      "completed": 8
+    }
+  ],
+  "memos": [
+    {
+      "id": "mo2luxb6y14emxgs2z",
+      "title": "日常",
+      "items": [
+        {
+          "id": "mo8y7526abt886cgq3n",
+          "title": "求职ing",
+          "content": "",
+          "createdAt": "2026-04-21T18:19:15.67Z",
+          "updatedAt": "2026-04-21T18:19:22.35Z",
+          "pinned": true
+        },
+        {
+          "id": "mo8y7am4ass6a9yajnt",
+          "title": "山色空蒙雨亦奇",
+          "content": "背景图为自己拍的雨后西湖",
+          "createdAt": "2026-04-21T18:19:22.875Z",
+          "updatedAt": "2026-04-22T04:10:42.27Z"
+        }
+      ],
+      "createdAt": "2026-04-17T07:47:13.31Z",
+      "updatedAt": "2026-04-22T04:10:42.27Z"
+    }
+  ],
+  "todosByDate": {
+    "2026-04-25": [
+      {
+        "id": "mo2lig6mywlht0bd5q",
+        "content": "工作台完善",
+        "priority": "medium",
+        "completed": true,
+        "subtasks": [
+          {
+            "id": "mo2ljmmxczmqvwakjza",
+            "content": "提示音量修改",
+            "completed": true
+          },
+          {
+            "id": "mo2ljry1vpkdro4fca",
+            "content": "常用工具顺序移动",
+            "completed": true
+          },
+          {
+            "id": "mo2llt79b5xjmws15bp",
+            "content": "常用工具可加文件夹分类",
+            "completed": true
+          },
+          {
+            "id": "mo2m0hudiz5ys31jv6i",
+            "content": "备忘录要有置顶以及拖动更改顺序功能",
+            "completed": true
+          },
+          {
+            "id": "mo2m31a4lykttvq2tlk",
+            "content": "交互逻辑：待办事项里的每一项的子任务，应能单击修改，双击完成",
+            "completed": true
+          },
+          {
+            "id": "mo2mhdnley02nunblgj",
+            "content": "确认一下页面切出后，番茄钟的时间流逝是否正常",
+            "completed": true
+          },
+          {
+            "id": "mo2mic3xsdw3ssrkk0c",
+            "content": "子任务添加应该是点击框外任意区域便保存，而不是一定要按回车",
+            "completed": true
+          },
+          {
+            "id": "mo2mjikilbcix88g1o",
+            "content": "子任务当有三行及以上时，上下间隔适度增大，以免观感混乱。",
+            "completed": true
+          },
+          {
+            "id": "mo3290mpa650w74kfi7",
+            "content": "待办事宜这里子任务右边留的空白太多，没必要，过度换行",
+            "completed": true
+          },
+          {
+            "id": "mo3wofpm3kofim4tnqe",
+            "content": "光标应该在能修改且被选中的地方才显现",
+            "completed": true
+          },
+          {
+            "id": "mo3yexavr8eta4max1f",
+            "content": "在编辑已添加的常用工具时，自动抓取功能未被屏蔽",
+            "completed": true
+          },
+          {
+            "id": "mo3yfsrkr0nwoy2ma6a",
+            "content": "待办事宜增加复制功能，以便未完成的事宜可以直接迁移到第二天",
+            "completed": true
+          }
+        ],
+        "createdAt": "2026-04-17T07:37:31.245Z",
+        "updatedAt": "2026-04-20T03:35:06.1Z",
+        "order": 0
+      }
+    ],
+    "2026-04-22": [],
+    "2026-04-24": [
+      {
+        "id": "mock2ibr80ughepei6x",
+        "content": "求职ing",
+        "priority": "medium",
+        "completed": false,
+        "subtasks": [
+          {
+            "id": "mock2mwvnwvrp0qing",
+            "content": "网站上线",
+            "completed": true
+          },
+          {
+            "id": "mock2r4720sanzkwz7a",
+            "content": "简历修改",
+            "completed": true
+          },
+          {
+            "id": "mock2unr2oaz7idse3t",
+            "content": "简历投递",
+            "completed": false
+          }
+        ],
+        "createdAt": "2026-04-24T06:54:49.671Z",
+        "updatedAt": "2026-04-24T07:00:47.486Z",
+        "order": 0
+      }
+    ],
+    "2026-04-26": [],
+    "2026-04-23": [],
+    "2026-04-28": [],
+    "2026-04-29": [],
+    "2026-04-30": [],
+    "2026-05-01": [],
+    "2026-05-02": [],
+    "2026-05-03": [],
+    "2026-04-27": [],
+    "2026-04-21": [],
+    "2026-04-20": [],
+    "2026-04-19": [],
+    "2026-04-18": [],
+    "2026-04-17": [],
+    "2026-04-16": [],
+    "2026-04-15": [],
+    "2026-04-14": [],
+    "2026-04-13": []
+  },
+  "settings": {
+    "backgroundPath": "西湖烟雨.jpg"
+  }
+}
