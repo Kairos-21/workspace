@@ -17,7 +17,7 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// 静态文件服务 - 注意路径：从根目录直接找 前端/
+// 静态文件服务 - 前端文件夹
 app.use(express.static(path.join(__dirname, '前端')));
 
 // 数据文件路径 - 使用环境变量或默认路径
@@ -221,12 +221,12 @@ app.get('/api/favicon', async (req, res) => {
         
         console.log('[Favicon] 正在获取 ' + hostname + ' 的 favicon');
         
-        // 方案0: 直接使用 Google 服务（特别适用于 Google 旗下网站）
-        const googleFaviconUrl = `https://www.google.com/s2/favicons?domain=${hostname}&sz=64`;
-        console.log('[Favicon] 尝试使用 Google 服务:', googleFaviconUrl);
+        // 方案1: 使用国内可用的icon.horse服务（不需要梯子）
+        const iconHorseUrl = `https://icon.horse/icon/${hostname}`;
+        console.log('[Favicon] 尝试使用 icon.horse 服务:', iconHorseUrl);
         return res.json({
             success: true,
-            data: { faviconUrl: googleFaviconUrl, method: 'google-service' }
+            data: { faviconUrl: iconHorseUrl, method: 'icon-horse' }
         });
         
     } catch (err) {
@@ -479,11 +479,34 @@ const bgUpload = multer({
 });
 
 // API: 上传背景图片
-app.post('/api/upload-background', (req, res) => {
-    res.status(501).json({
-        success: false,
-        message: '背景上传已完全迁移到前端，请在浏览器中操作'
-    });
+app.post('/api/upload-background', bgUpload.single('background'), (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: '没有上传文件'
+            });
+        }
+        
+        const bgUrl = `/uploads/backgrounds/${req.file.filename}`;
+        console.log('[Upload] 背景上传成功:', bgUrl);
+        
+        res.json({
+            success: true,
+            data: {
+                filename: req.file.filename,
+                url: bgUrl,
+                size: req.file.size
+            },
+            message: '背景上传成功'
+        });
+    } catch (err) {
+        console.error('[Upload] 背景上传失败:', err);
+        res.status(500).json({
+            success: false,
+            message: '背景上传失败'
+        });
+    }
 });
 
 // 启动服务器

@@ -441,21 +441,35 @@ function closeBgModal() {
 /**
  * 上传并保存背景（完全前端处理）
  */
-function uploadBackground(file) {
-    showToast('正在处理背景...');
-    const reader = new FileReader();
-    reader.onload = (event) => {
-        if (!appData.settings) appData.settings = {};
-        appData.settings.backgroundPath = event.target.result; // Base64
-        saveData(); // 只保存到 LocalStorage
-        applyBackground(event.target.result);
-        showToast('背景更换成功');
-        closeBgModal();
-    };
-    reader.onerror = () => {
-        showToast('背景处理失败');
-    };
-    reader.readAsDataURL(file);
+async function uploadBackground(file) {
+    showToast('正在上传背景...');
+    
+    try {
+        // 调用后端 API 上传背景
+        const formData = new FormData();
+        formData.append('background', file);
+        
+        const response = await fetch(`${API_BASE}/api/upload-background`, {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (result.success && result.data && result.data.url) {
+            if (!appData.settings) appData.settings = {};
+            appData.settings.backgroundPath = result.data.url;
+            saveData();
+            applyBackground(result.data.url);
+            showToast('背景更换成功');
+            closeBgModal();
+        } else {
+            throw new Error(result.message || '上传失败');
+        }
+    } catch (err) {
+        console.error('背景上传失败:', err);
+        showToast('上传失败，请重试');
+    }
 }
 
 /**
