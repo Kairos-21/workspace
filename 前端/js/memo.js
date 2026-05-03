@@ -13,6 +13,9 @@ let currentMemoId = null;
 // 展开状态
 let expandedItems = new Set();
 
+// 选中的图片状态 { memoId-itemId-imgIndex }
+let selectedImageKey = null;
+
 // 自动保存定时器
 let memoSaveTimer = null;
 
@@ -171,12 +174,15 @@ function renderMemoItem(memoId, item, index) {
                 style="display: ${isExpanded ? 'block' : 'none'}; padding: 0 12px 12px 32px;">
                 ${images.length > 0 ? `
                     <div class="memo-images-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; margin-bottom: 12px;">
-                        ${images.map((img, imgIndex) => `
-                            <div class="memo-image-item" style="position: relative; border-radius: 6px; overflow: hidden; border: 1px solid var(--border-color);">
-                                <img src="${img}" style="width: 100%; height: auto; display: block;">
-                                <button class="memo-image-delete" onclick="deleteMemoImage('${memoId}', '${item.id}', ${imgIndex})" style="position: absolute; top: 4px; right: 4px; background: rgba(231, 76, 60, 0.9); color: white; border: none; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; font-size: 14px; line-height: 1;">×</button>
+                        ${images.map((img, imgIndex) => {
+                            const imgKey = `${memoId}-${item.id}-${imgIndex}`;
+                            const isSelected = selectedImageKey === imgKey;
+                            return `
+                            <div class="memo-image-item" style="position: relative; border-radius: 6px; overflow: hidden; border: 2px solid ${isSelected ? 'var(--primary)' : 'var(--border-color)'}; cursor: pointer; transition: all 0.2s;" onclick="selectMemoImage('${memoId}', '${item.id}', ${imgIndex})" ondblclick="zoomMemoImage('${img}')">
+                                <img src="${img}" style="width: 100%; height: auto; display: block; pointer-events: none;">
+                                <button class="memo-image-delete" onclick="event.stopPropagation(); deleteMemoImage('${memoId}', '${item.id}', ${imgIndex})" style="position: absolute; top: 4px; right: 4px; background: rgba(231, 76, 60, 0.9); color: white; border: none; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; font-size: 14px; line-height: 1; display: ${isSelected ? 'block' : 'none'}; transition: all 0.2s;">×</button>
                             </div>
-                        `).join('')}
+                        `}).join('')}
                     </div>
                 ` : ''}
                 <textarea 
@@ -186,7 +192,7 @@ function renderMemoItem(memoId, item, index) {
                     onchange="updateMemoItemContent('${memoId}', '${item.id}', this.value)"
                     style="width: 100%; min-height: 100px; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.85rem; resize: vertical; font-family: inherit;">${escapeHtml(item.content || '')}</textarea>
                 <div style="margin-top: 8px; color: var(--text-secondary); font-size: 0.75rem;">
-                    💡 提示：在文本框中直接粘贴图片即可添加
+                    💡 提示：单击图片选中后删除，双击图片放大查看
                 </div>
             </div>
         </div>
@@ -505,6 +511,53 @@ function addMemoImage(memoId, itemId, imgData) {
 }
 
 /**
+ * 选中备忘图片
+ */
+function selectMemoImage(memoId, itemId, imgIndex) {
+    const imgKey = `${memoId}-${itemId}-${imgIndex}`;
+    if (selectedImageKey === imgKey) {
+        selectedImageKey = null;
+    } else {
+        selectedImageKey = imgKey;
+    }
+    renderMemoContent();
+}
+
+/**
+ * 放大查看图片
+ */
+function zoomMemoImage(imgSrc) {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.9);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10000;
+        cursor: zoom-out;
+    `;
+    overlay.onclick = () => document.body.removeChild(overlay);
+    
+    const img = document.createElement('img');
+    img.src = imgSrc;
+    img.style.cssText = `
+        max-width: 90%;
+        max-height: 90%;
+        object-fit: contain;
+        border-radius: 8px;
+    `;
+    img.onclick = (e) => e.stopPropagation();
+    
+    overlay.appendChild(img);
+    document.body.appendChild(overlay);
+}
+
+/**
  * 删除备忘条目图片
  */
 function deleteMemoImage(memoId, itemId, imgIndex) {
@@ -516,6 +569,7 @@ function deleteMemoImage(memoId, itemId, imgIndex) {
         item.images.splice(imgIndex, 1);
         item.updatedAt = new Date().toISOString();
         memo.updatedAt = new Date().toISOString();
+        selectedImageKey = null;
         window.debouncedSave();
         renderMemoContent();
         window.showToast('已删除图片');
@@ -546,3 +600,5 @@ window.deleteMemoItem = deleteMemoItem;
 window.togglePinMemoItem = togglePinMemoItem;
 window.handleMemoPaste = handleMemoPaste;
 window.deleteMemoImage = deleteMemoImage;
+window.selectMemoImage = selectMemoImage;
+window.zoomMemoImage = zoomMemoImage;
