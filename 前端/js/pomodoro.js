@@ -777,6 +777,7 @@ function completePomodoro() {
         // 工作完成
         completedPomodoros++;
         currentCountEl.textContent = completedPomodoros;
+        console.log('🍅 工作完成，completedPomodoros:', completedPomodoros);
         
         // 记录完成
         recordCompletedPomodoro();
@@ -796,6 +797,9 @@ function completePomodoro() {
         // 判断休息类型
         const isLongBreak = completedPomodoros % settings.longBreakInterval === 0;
         const breakDuration = isLongBreak ? settings.longBreak : settings.shortBreak;
+        console.log('⏸️ 判断休息类型: isLongBreak:', isLongBreak, 'breakDuration:', breakDuration, 
+            'longBreakInterval:', settings.longBreakInterval,
+            'shortBreak:', settings.shortBreak, 'longBreak:', settings.longBreak);
         
         // 如果休息时间为0，跳过休息直接开始下一个番茄钟
         if (breakDuration === 0) {
