@@ -210,6 +210,15 @@ function initPomodoroModule() {
     // 预加载通知音
     preloadNotificationSound();
     
+    // 从今日记录中恢复 completedPomodoros
+    const today = window.getToday();
+    const todayRecord = (window.appData.pomodoroRecords || []).find(r => r.date === today);
+    if (todayRecord) {
+        completedPomodoros = todayRecord.completed;
+        currentCountEl.textContent = completedPomodoros;
+        console.log('📊 从今日记录恢复完成数:', completedPomodoros);
+    }
+    
     // 尝试恢复之前的番茄钟状态
     restorePomodoroState();
     
@@ -870,6 +879,7 @@ function recordCompletedPomodoro() {
     records = records.filter(r => new Date(r.date) >= thirtyDaysAgo);
     
     window.appData.pomodoroRecords = records;
+    console.log('📝 记录完成的番茄钟，今日:', completedPomodoros, '条记录:', records);
     window.debouncedSave();
 }
 
