@@ -25,6 +25,15 @@ let audioContext = null;
 let currentPlayingAudio = null;
 let currentPlayingBtnId = null;
 
+// 预加载的音频对象
+let preloadedAudio = null;
+
+// 待播放标记 - 用于后台标签页
+let pendingPlayback = false;
+
+// 最后播放时间
+let lastPlayTime = 0;
+
 // 声音类型配置（预设）
 const PRESET_SOUNDS = {
     qing: { name: '磬声', type: 'preset', file: 'sounds/qing.wav' }
@@ -178,6 +187,9 @@ function initPomodoroModule() {
                     savePomodoroSettings();
                     renderSoundList();
                     
+                    // 重新预加载音频
+                    preloadNotificationSound();
+                    
                     window.showToast(`✓ 已上传: ${file.name}`);
                 } else {
                     window.showToast('上传失败: ' + (data.message || '未知错误'));
@@ -191,6 +203,12 @@ function initPomodoroModule() {
             e.target.value = '';
         };
     }
+    
+    // 监听页面可见性变化 - 修复后台标签页播放问题
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    // 预加载通知音
+    preloadNotificationSound();
     
     // 尝试恢复之前的番茄钟状态
     restorePomodoroState();
@@ -217,6 +235,51 @@ function ensureAudioContext() {
     if (audioContext && audioContext.state === 'suspended') {
         audioContext.resume();
     }
+}
+
+/**
+ * 处理页面可见性变化
+ */
+function handleVisibilityChange() {
+    if (!document.hidden) {
+        console.log('📱 页面变为可见');
+        
+        // 确保音频上下文激活
+        ensureAudioContext();
+        
+        // 如果有待播放的提示音，立即播放
+        if (pendingPlayback) {
+            console.log('🔔 播放待播的提示音');
+            pendingPlayback = false;
+            playNotificationSound();
+        }
+    }
+}
+
+/**
+ * 预加载通知音
+ */
+function preloadNotificationSound() {
+    const settings = window.appData.pomodoroSettings;
+    const sounds = settings.sounds || [];
+    const selectedSound = sounds.find(s => s.id === settings.selectedSoundId);
+    
+    if (!selectedSound) return;
+    
+    const filePath = selectedSound.type === 'preset' ? selectedSound.file : selectedSound.path;
+    if (!filePath) return;
+    
+    // 确保路径正确
+    let fullPath = filePath;
+    if (!filePath.startsWith('http') && !filePath.startsWith('/')) {
+        fullPath = '/' + filePath;
+    }
+    
+    // 预加载音频
+    preloadedAudio = new Audio(fullPath);
+    preloadedAudio.load();
+    
+    console.log('🎵 预加载提示音完成:', fullPath);
 }
 
 /**
@@ -280,6 +343,9 @@ function loadPomodoroSettings() {
     
     // 更新提示音管理区域显示状态
     updateSoundManagementVisibility();
+    
+    // 预加载通知音
+    preloadNotificationSound();
     
     // 重置时间
     currentTime = settings.workDuration * 60;
@@ -828,47 +894,48 @@ function updatePomodoroDisplay() {
  */
 function playNotificationSound() {
     const settings = window.appData.pomodoroSettings;
-    const sounds = settings.sounds || [];
-    const selectedSound = sounds.find(s => s.id === settings.selectedSoundId);
+    const now = Date.now();
     
-    console.log('🔔 播放提示音 - 当前音量设置:', settings.soundVolume);
-    
-    if (!selectedSound) {
-        console.error('未找到选中的提示音');
+    // 防止短时间内重复播放（间隔小于1秒）
+    if (now - lastPlayTime < 1000) {
+        console.log('⏳ 跳过重复播放');
         return;
     }
+    lastPlayTime = now;
     
-    try {
-        ensureAudioContext();
-        
-        if (selectedSound.type === 'preset') {
-            playAudioFile(selectedSound.file);
-        } else if (selectedSound.path) {
-            playAudioFile(selectedSound.path);
+    console.log('🔔 播放提示音 - 当前音量设置:', settings.soundVolume, '页面可见:', !document.hidden);
+    
+    // 确保音频上下文激活
+    ensureAudioContext();
+    
+    // 使用预加载的音频播放
+    if (preloadedAudio) {
+        try {
+            const volume = (settings.soundVolume || 80) / 100;
+            preloadedAudio.volume = volume;
+            preloadedAudio.currentTime = 0;
+            
+            const playPromise = preloadedAudio.play();
+            if (playPromise !== undefined) {
+                playPromise
+                    .then(() => {
+                        console.log('✅ 提示音播放成功');
+                        pendingPlayback = false;
+                    })
+                    .catch(e => {
+                        console.log('⚠️ 播放失败，可能是后台标签页，设置待播标记:', e);
+                        pendingPlayback = true;
+                    });
+            }
+        } catch (e) {
+            console.log('播放提示音失败:', e);
+            pendingPlayback = true;
         }
-    } catch (e) {
-        console.log('播放提示音失败:', e);
+    } else {
+        console.log('⚠️ 没有预加载的音频，重新加载');
+        preloadNotificationSound();
+        pendingPlayback = true;
     }
-}
-
-/**
- * 播放音频文件
- */
-function playAudioFile(filePath) {
-    const settings = window.appData.pomodoroSettings;
-    const volume = (settings.soundVolume || 80) / 100; // 转换为 0-1 范围
-    
-    console.log('播放提示音，音量设置值:', settings.soundVolume, '实际音量:', volume);
-    
-    // 确保路径正确
-    let fullPath = filePath;
-    if (!filePath.startsWith('http') && !filePath.startsWith('/')) {
-        fullPath = '/' + filePath;
-    }
-    
-    const audio = new Audio(fullPath);
-    audio.volume = volume;
-    audio.play().catch(e => console.log('播放失败:', e));
 }
 
 /**
