@@ -996,9 +996,12 @@ function restorePomodoroState() {
     } else if (session.endTime && session.endTime <= Date.now()) {
         // 计时已经结束了
         if (session.state === PomodoroState.WORKING || session.state === PomodoroState.BREAK) {
+            console.log('🔄 恢复时检测到计时已结束，调用 completePomodoro()');
             completePomodoro();
+            // completePomodoro() 已经会保存新状态，不需要再 reset
+        } else {
+            resetPomodoroSession();
         }
-        resetPomodoroSession();
     } else if (session.state === PomodoroState.PAUSED) {
         // 暂停状态
         currentTime = session.currentTime;
