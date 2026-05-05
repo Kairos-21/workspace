@@ -439,6 +439,57 @@ function showEditTodoModal(id) {
 }
 
 /**
+ * 添加待办到指定日期
+ */
+function addTodoToDate(dateStr, content, priority = 'medium') {
+    if (!window.appData.todosByDate) {
+        window.appData.todosByDate = {};
+    }
+    if (!window.appData.todosByDate[dateStr]) {
+        window.appData.todosByDate[dateStr] = [];
+    }
+    
+    const todo = {
+        id: window.generateId(),
+        content: content,
+        priority: priority,
+        completed: false,
+        subtasks: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+    };
+    
+    window.appData.todosByDate[dateStr].push(todo);
+    window.debouncedSave();
+}
+
+/**
+ * 删除指定日期范围内容匹配的待办
+ */
+function removeTodosByContentInRange(startDate, endDate, content) {
+    if (!window.appData.todosByDate) return;
+    
+    const dates = [];
+    let currentDate = new Date(startDate);
+    const end = new Date(endDate);
+    
+    while (currentDate <= end) {
+        const year = currentDate.getFullYear();
+        const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+        const day = String(currentDate.getDate()).padStart(2, '0');
+        dates.push(`${year}-${month}-${day}`);
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+    
+    dates.forEach(dateStr => {
+        const todos = window.appData.todosByDate[dateStr];
+        if (todos) {
+            window.appData.todosByDate[dateStr] = todos.filter(todo => todo.content !== content);
+        }
+    });
+}
+
+/**
  * 添加待办
  */
 function addTodo(content, priority = 'medium') {
@@ -800,6 +851,8 @@ function escapeHtml(text) {
 // 导出函数到全局
 window.initTodoModule = initTodoModule;
 window.addTodo = addTodo;
+window.addTodoToDate = addTodoToDate;
+window.removeTodosByContentInRange = removeTodosByContentInRange;
 window.editTodo = editTodo;
 window.deleteTodo = deleteTodo;
 window.toggleTodo = toggleTodo;

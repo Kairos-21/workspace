@@ -378,6 +378,12 @@ function showAddScheduleModal(date) {
             <label>描述</label>
             <textarea id="scheduleDescription" placeholder="日程描述（可选）..."></textarea>
         </div>
+        <div class="form-group">
+            <label style="display: flex; align-items: center; gap: 8px;">
+                <input type="checkbox" id="addAsTodo" checked>
+                <span>自动添加为每天的待办事项</span>
+            </label>
+        </div>
     `;
     
     const footerHtml = `
@@ -434,6 +440,7 @@ function showAddScheduleModal(date) {
         const priority = document.getElementById('schedulePriority').value;
         const category = document.getElementById('scheduleCategory').value;
         const description = document.getElementById('scheduleDescription').value.trim();
+        const addAsTodo = document.getElementById('addAsTodo').checked;
         
         // 验证结束日期
         if (endDate && endDate < scheduleDate) {
@@ -451,7 +458,8 @@ function showAddScheduleModal(date) {
                 priority,
                 category,
                 color: selectedColor,
-                description
+                description,
+                addAsTodo
             });
             closeModal();
             window.showToast('添加成功');
@@ -608,6 +616,12 @@ function showEditScheduleModal(scheduleId) {
             <label>描述</label>
             <textarea id="editScheduleDescription">${escapeHtml(schedule.description || '')}</textarea>
         </div>
+        <div class="form-group">
+            <label style="display: flex; align-items: center; gap: 8px;">
+                <input type="checkbox" id="updateTodo" checked>
+                <span>同步更新待办事项</span>
+            </label>
+        </div>
     `;
     
     const footerHtml = `
@@ -660,6 +674,7 @@ function showEditScheduleModal(scheduleId) {
         const priority = document.getElementById('editSchedulePriority').value;
         const category = document.getElementById('editScheduleCategory').value;
         const description = document.getElementById('editScheduleDescription').value.trim();
+        const updateTodo = document.getElementById('updateTodo').checked;
         
         // 验证结束日期
         if (endDate && endDate < scheduleDate) {
@@ -677,12 +692,32 @@ function showEditScheduleModal(scheduleId) {
                 priority,
                 category,
                 color: selectedColor,
-                description
+                description,
+                updateTodo
             });
             closeModal();
             window.showToast('保存成功');
         }
     };
+}
+
+/**
+ * 生成日期范围内的所有日期
+ */
+function getDatesInRange(startDate, endDate) {
+    const dates = [];
+    let currentDate = new Date(startDate);
+    const end = new Date(endDate);
+    
+    while (currentDate <= end) {
+        const year = currentDate.getFullYear();
+        const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+        const day = String(currentDate.getDate()).padStart(2, '0');
+        dates.push(`${year}-${month}-${day}`);
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+    
+    return dates;
 }
 
 /**
@@ -704,6 +739,15 @@ function addSchedule(data) {
     };
     
     window.appData.schedules.push(schedule);
+    
+    // 如果是多日日程且用户选择了自动添加待办
+    if (data.endDate && data.endDate !== data.date && data.addAsTodo) {
+        const dates = getDatesInRange(data.date, data.endDate);
+        dates.forEach(dateStr => {
+            addTodoToDate(dateStr, data.title, data.priority || 'medium');
+        });
+    }
+    
     window.debouncedSave();
     renderCalendar();
 }
@@ -714,6 +758,15 @@ function addSchedule(data) {
 function editSchedule(id, data) {
     const schedule = window.appData.schedules.find(s => s.id === id);
     if (schedule) {
+        // 如果用户选择同步更新待办
+        if (data.updateTodo) {
+            // 如果之前是多日日程，先移除旧的待办
+            if (schedule.endDate && schedule.endDate !== schedule.date) {
+                removeTodosByContentInRange(schedule.date, schedule.endDate, schedule.title);
+            }
+        }
+        
+        // 更新日程
         schedule.title = data.title;
         schedule.date = data.date;
         schedule.endDate = data.endDate;
@@ -723,6 +776,15 @@ function editSchedule(id, data) {
         schedule.category = data.category;
         schedule.color = data.color;
         schedule.description = data.description;
+        
+        // 如果用户选择同步更新待办且现在是多日日程
+        if (data.updateTodo && data.endDate && data.endDate !== data.date) {
+            const dates = getDatesInRange(data.date, data.endDate);
+            dates.forEach(dateStr => {
+                addTodoToDate(dateStr, data.title, data.priority || 'medium');
+            });
+        }
+        
         window.debouncedSave();
         renderCalendar();
     }
@@ -734,6 +796,13 @@ function editSchedule(id, data) {
 function deleteSchedule(id) {
     const index = window.appData.schedules.findIndex(s => s.id === id);
     if (index > -1) {
+        const schedule = window.appData.schedules[index];
+        
+        // 如果是多日日程，删除相关待办
+        if (schedule.endDate && schedule.endDate !== schedule.date) {
+            removeTodosByContentInRange(schedule.date, schedule.endDate, schedule.title);
+        }
+        
         window.appData.schedules.splice(index, 1);
         window.debouncedSave();
         renderCalendar();
