@@ -4,6 +4,7 @@
 
 // 优先级配置
 const PRIORITY_CONFIG = {
+    daily: { label: '日常', color: '#3498DB' },
     high: { label: '高', color: '#E74C3C' },
     medium: { label: '中', color: '#F39C12' },
     low: { label: '低', color: '#27AE60' }
@@ -43,7 +44,7 @@ function isTodoFullyCompleted(todo) {
 }
 
 /**
- * 把前一天的持续待办复制到今天
+ * 把前一天的持续待办复制到今天，并添加日常优先级待办
  */
 function carryOverContinuousTodos() {
     const today = window.getToday();
@@ -61,42 +62,79 @@ function carryOverContinuousTodos() {
     }
     const todayTodos = window.appData.todosByDate[today];
     
-    // 获取今天已经存在的 continuousId，避免重复添加
+    // 获取今天已经存在的 continuousId 和日常待办的内容，避免重复添加
     const todayContinuousIds = new Set(todayTodos
         .filter(t => t.continuousId)
         .map(t => t.continuousId));
+    const todayDailyContents = new Set(todayTodos
+        .filter(t => t.priority === 'daily' && t.dailyId)
+        .map(t => t.dailyId));
     
-    // 遍历昨天的待办，找出持续且未完成的
+    // 收集昨天的日常优先级待办，准备添加到今天（日常待办每天重置为未完成）
+    const dailyTodosToAdd = [];
+    
+    // 遍历昨天的待办
     yesterdayTodos.forEach(yesterdayTodo => {
-        // 只处理持续且未全部完成的待办
-        if (!yesterdayTodo.continuous || !yesterdayTodo.continuousId || isTodoFullyCompleted(yesterdayTodo)) {
-            return;
+        // 处理日常优先级待办
+        if (yesterdayTodo.priority === 'daily') {
+            // 为日常待办生成或获取 dailyId
+            const dailyId = yesterdayTodo.dailyId || window.generateId();
+            
+            // 避免重复添加
+            if (!todayDailyContents.has(dailyId)) {
+                // 添加日常待办，重置为未完成状态
+                dailyTodosToAdd.push({
+                    id: window.generateId(),
+                    content: yesterdayTodo.content,
+                    priority: 'daily',
+                    completed: false,
+                    subtasks: yesterdayTodo.subtasks ? yesterdayTodo.subtasks.map(st => ({
+                        id: window.generateId(),
+                        content: st.content,
+                        completed: false  // 日常待办的子任务也重置为未完成
+                    })) : [],
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    continuous: false,  // 日常优先级不需要持续属性
+                    continuousId: null,
+                    dailyId: dailyId
+                });
+            }
         }
         
-        // 避免重复添加
-        if (todayContinuousIds.has(yesterdayTodo.continuousId)) {
-            return;
+        // 处理持续且未完成的待办
+        if (yesterdayTodo.continuous && yesterdayTodo.continuousId && !isTodoFullyCompleted(yesterdayTodo)) {
+            // 避免重复添加
+            if (!todayContinuousIds.has(yesterdayTodo.continuousId)) {
+                // 复制待办事项到今天，保持子任务状态
+                const newTodo = {
+                    id: window.generateId(),
+                    content: yesterdayTodo.content,
+                    priority: yesterdayTodo.priority,
+                    completed: yesterdayTodo.completed,
+                    subtasks: yesterdayTodo.subtasks ? yesterdayTodo.subtasks.map(st => ({
+                        id: window.generateId(),
+                        content: st.content,
+                        completed: st.completed
+                    })) : [],
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    continuous: true,
+                    continuousId: yesterdayTodo.continuousId
+                };
+                
+                todayTodos.push(newTodo);
+            }
         }
-        
-        // 复制待办事项到今天，保持子任务状态
-        const newTodo = {
-            id: window.generateId(),
-            content: yesterdayTodo.content,
-            priority: yesterdayTodo.priority,
-            completed: yesterdayTodo.completed,
-            subtasks: yesterdayTodo.subtasks ? yesterdayTodo.subtasks.map(st => ({
-                id: window.generateId(),
-                content: st.content,
-                completed: st.completed
-            })) : [],
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            continuous: true,
-            continuousId: yesterdayTodo.continuousId
-        };
-        
-        todayTodos.push(newTodo);
     });
+    
+    // 把日常待办添加到最前面
+    if (dailyTodosToAdd.length > 0) {
+        // 倒序添加，保持原来的顺序
+        for (let i = dailyTodosToAdd.length - 1; i >= 0; i--) {
+            todayTodos.unshift(dailyTodosToAdd[i]);
+        }
+    }
     
     window.debouncedSave();
 }
@@ -202,8 +240,22 @@ function renderTodoList() {
         return;
     }
     
-    // 按order排序，未完成的在前
+    // 排序：日常优先级在前，然后未完成的在前，最后按order排序
     const sortedTodos = [...todos].sort((a, b) => {
+        // 日常优先级始终在最前面
+        if (a.priority === 'daily' && b.priority !== 'daily') {
+            return -1;
+        }
+        if (a.priority !== 'daily' && b.priority === 'daily') {
+            return 1;
+        }
+        // 都是日常优先级的话，按order排序
+        if (a.priority === 'daily' && b.priority === 'daily') {
+            const orderA = a.order !== undefined ? a.order : new Date(a.createdAt).getTime();
+            const orderB = b.order !== undefined ? b.order : new Date(b.createdAt).getTime();
+            return orderA - orderB;
+        }
+        // 非日常优先级，按完成状态排序
         if (a.completed !== b.completed) {
             return a.completed ? 1 : -1;
         }
@@ -451,6 +503,7 @@ function showAddTodoModal() {
         <div class="form-group">
             <label>优先级</label>
             <select id="newTodoPriority">
+                <option value="daily">日常优先级</option>
                 <option value="high">高优先级</option>
                 <option value="medium" selected>中优先级</option>
                 <option value="low">低优先级</option>
@@ -506,6 +559,7 @@ function showEditTodoModal(id) {
         <div class="form-group">
             <label>优先级</label>
             <select id="editTodoPriority">
+                <option value="daily" ${todo.priority === 'daily' ? 'selected' : ''}>日常优先级</option>
                 <option value="high" ${todo.priority === 'high' ? 'selected' : ''}>高优先级</option>
                 <option value="medium" ${todo.priority === 'medium' ? 'selected' : ''}>中优先级</option>
                 <option value="low" ${todo.priority === 'low' ? 'selected' : ''}>低优先级</option>
@@ -543,7 +597,7 @@ function showEditTodoModal(id) {
 /**
  * 添加待办到指定日期
  */
-function addTodoToDate(dateStr, content, priority = 'medium', continuous = false, existingContinuousId = null) {
+function addTodoToDate(dateStr, content, priority = 'medium', continuous = false, existingContinuousId = null, existingDailyId = null) {
     if (!window.appData.todosByDate) {
         window.appData.todosByDate = {};
     }
@@ -560,10 +614,17 @@ function addTodoToDate(dateStr, content, priority = 'medium', continuous = false
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         continuous: continuous,
-        continuousId: continuous ? (existingContinuousId || window.generateId()) : null
+        continuousId: continuous ? (existingContinuousId || window.generateId()) : null,
+        dailyId: priority === 'daily' ? (existingDailyId || window.generateId()) : null
     };
     
-    window.appData.todosByDate[dateStr].push(todo);
+    // 如果是日常优先级，添加到最前面
+    if (priority === 'daily') {
+        window.appData.todosByDate[dateStr].unshift(todo);
+    } else {
+        window.appData.todosByDate[dateStr].push(todo);
+    }
+    
     window.debouncedSave();
 }
 
@@ -607,10 +668,17 @@ function addTodo(content, priority = 'medium', continuous = false) {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         continuous: continuous,
-        continuousId: continuous ? window.generateId() : null
+        continuousId: continuous ? window.generateId() : null,
+        dailyId: priority === 'daily' ? window.generateId() : null
     };
     
-    todos.push(todo);
+    // 如果是日常优先级，添加到最前面
+    if (priority === 'daily') {
+        todos.unshift(todo);
+    } else {
+        todos.push(todo);
+    }
+    
     window.debouncedSave();
     renderTodoList();
 }
@@ -628,6 +696,14 @@ function editTodo(id, content, priority, continuous) {
         // 如果开启了持续属性但没有 continuousId，则生成一个
         if (continuous && !todo.continuousId) {
             todo.continuousId = window.generateId();
+        }
+        // 如果改为日常优先级但没有 dailyId，则生成一个
+        if (priority === 'daily' && !todo.dailyId) {
+            todo.dailyId = window.generateId();
+        }
+        // 如果从日常优先级改为其他，清除 dailyId
+        if (priority !== 'daily' && todo.dailyId) {
+            todo.dailyId = null;
         }
         todo.updatedAt = new Date().toISOString();
         window.debouncedSave();
