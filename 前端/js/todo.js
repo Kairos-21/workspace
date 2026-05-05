@@ -20,6 +20,88 @@ let addTodoBtnEl = null;
 let todoDateDisplayEl = null;
 
 /**
+ * 获取前一天的日期字符串
+ */
+function getYesterday(todayStr) {
+    const today = new Date(todayStr);
+    today.setDate(today.getDate() - 1);
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+/**
+ * 检查待办事项是否全部完成（包括子任务）
+ */
+function isTodoFullyCompleted(todo) {
+    if (!todo.completed) return false;
+    if (todo.subtasks && todo.subtasks.length > 0) {
+        return todo.subtasks.every(st => st.completed);
+    }
+    return true;
+}
+
+/**
+ * 把前一天的持续待办复制到今天
+ */
+function carryOverContinuousTodos() {
+    const today = window.getToday();
+    const yesterday = getYesterday(today);
+    
+    // 获取昨天的待办事项
+    if (!window.appData.todosByDate || !window.appData.todosByDate[yesterday]) {
+        return;
+    }
+    const yesterdayTodos = window.appData.todosByDate[yesterday];
+    
+    // 获取今天的待办事项
+    if (!window.appData.todosByDate[today]) {
+        window.appData.todosByDate[today] = [];
+    }
+    const todayTodos = window.appData.todosByDate[today];
+    
+    // 获取今天已经存在的 continuousId，避免重复添加
+    const todayContinuousIds = new Set(todayTodos
+        .filter(t => t.continuousId)
+        .map(t => t.continuousId));
+    
+    // 遍历昨天的待办，找出持续且未完成的
+    yesterdayTodos.forEach(yesterdayTodo => {
+        // 只处理持续且未全部完成的待办
+        if (!yesterdayTodo.continuous || !yesterdayTodo.continuousId || isTodoFullyCompleted(yesterdayTodo)) {
+            return;
+        }
+        
+        // 避免重复添加
+        if (todayContinuousIds.has(yesterdayTodo.continuousId)) {
+            return;
+        }
+        
+        // 复制待办事项到今天，保持子任务状态
+        const newTodo = {
+            id: window.generateId(),
+            content: yesterdayTodo.content,
+            priority: yesterdayTodo.priority,
+            completed: yesterdayTodo.completed,
+            subtasks: yesterdayTodo.subtasks ? yesterdayTodo.subtasks.map(st => ({
+                id: window.generateId(),
+                content: st.content,
+                completed: st.completed
+            })) : [],
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            continuous: true,
+            continuousId: yesterdayTodo.continuousId
+        };
+        
+        todayTodos.push(newTodo);
+    });
+    
+    window.debouncedSave();
+}
+
+/**
  * 初始化待办事项模块
  */
 function initTodoModule() {
@@ -34,6 +116,9 @@ function initTodoModule() {
     
     // 迁移旧数据（如果有）
     migrateOldTodos();
+    
+    // 把前一天的持续待办复制到今天
+    carryOverContinuousTodos();
     
     // 绑定事件
     addTodoBtnEl.onclick = showAddTodoModal;
@@ -174,6 +259,9 @@ function createTodoItemHtml(todo, number) {
             </div>
         ` 
         : '';
+    const continuousBadge = todo.continuous 
+        ? '<span class="todo-continuous" title="持续放置在每日待办">🔄</span>' 
+        : '';
     
     return `
         <li class="todo-item ${completedClass}" data-id="${todo.id}" draggable="true">
@@ -182,7 +270,7 @@ function createTodoItemHtml(todo, number) {
                 ${todo.completed ? 'checked' : ''} 
                 onchange="toggleTodo('${todo.id}')">
             <div class="todo-content-wrapper">
-                <div class="todo-content">${escapeHtml(todo.content)}</div>
+                <div class="todo-content">${continuousBadge}${escapeHtml(todo.content)}</div>
                 <div class="todo-meta">
                     <span class="todo-priority ${todo.priority}" 
                         style="background-color: ${priority.color}">${priority.label}</span>
@@ -368,6 +456,12 @@ function showAddTodoModal() {
                 <option value="low">低优先级</option>
             </select>
         </div>
+        <div class="form-group">
+            <label style="display: flex; align-items: center; gap: 8px;">
+                <input type="checkbox" id="newTodoContinuous">
+                <span>持续放置在每日待办直到全部完成</span>
+            </label>
+        </div>
     `;
     
     const footerHtml = `
@@ -381,9 +475,10 @@ function showAddTodoModal() {
     document.getElementById('addTodoOk').onclick = () => {
         const content = document.getElementById('newTodoContent').value.trim();
         const priority = document.getElementById('newTodoPriority').value;
+        const continuous = document.getElementById('newTodoContinuous').checked;
         
         if (content) {
-            addTodo(content, priority);
+            addTodo(content, priority, continuous);
             closeModal();
             window.showToast('添加成功');
         }
@@ -416,6 +511,12 @@ function showEditTodoModal(id) {
                 <option value="low" ${todo.priority === 'low' ? 'selected' : ''}>低优先级</option>
             </select>
         </div>
+        <div class="form-group">
+            <label style="display: flex; align-items: center; gap: 8px;">
+                <input type="checkbox" id="editTodoContinuous" ${todo.continuous ? 'checked' : ''}>
+                <span>持续放置在每日待办直到全部完成</span>
+            </label>
+        </div>
     `;
     
     const footerHtml = `
@@ -429,9 +530,10 @@ function showEditTodoModal(id) {
     document.getElementById('editTodoOk').onclick = () => {
         const content = document.getElementById('editTodoContent').value.trim();
         const priority = document.getElementById('editTodoPriority').value;
+        const continuous = document.getElementById('editTodoContinuous').checked;
         
         if (content) {
-            editTodo(id, content, priority);
+            editTodo(id, content, priority, continuous);
             closeModal();
             window.showToast('保存成功');
         }
@@ -441,7 +543,7 @@ function showEditTodoModal(id) {
 /**
  * 添加待办到指定日期
  */
-function addTodoToDate(dateStr, content, priority = 'medium') {
+function addTodoToDate(dateStr, content, priority = 'medium', continuous = false, existingContinuousId = null) {
     if (!window.appData.todosByDate) {
         window.appData.todosByDate = {};
     }
@@ -456,7 +558,9 @@ function addTodoToDate(dateStr, content, priority = 'medium') {
         completed: false,
         subtasks: [],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
+        continuous: continuous,
+        continuousId: continuous ? (existingContinuousId || window.generateId()) : null
     };
     
     window.appData.todosByDate[dateStr].push(todo);
@@ -492,7 +596,7 @@ function removeTodosByContentInRange(startDate, endDate, content) {
 /**
  * 添加待办
  */
-function addTodo(content, priority = 'medium') {
+function addTodo(content, priority = 'medium', continuous = false) {
     const todos = getCurrentTodos();
     const todo = {
         id: window.generateId(),
@@ -501,7 +605,9 @@ function addTodo(content, priority = 'medium') {
         completed: false,
         subtasks: [],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
+        continuous: continuous,
+        continuousId: continuous ? window.generateId() : null
     };
     
     todos.push(todo);
@@ -512,12 +618,17 @@ function addTodo(content, priority = 'medium') {
 /**
  * 编辑待办
  */
-function editTodo(id, content, priority) {
+function editTodo(id, content, priority, continuous) {
     const todos = getCurrentTodos();
     const todo = todos.find(t => t.id === id);
     if (todo) {
         todo.content = content;
         todo.priority = priority;
+        todo.continuous = continuous;
+        // 如果开启了持续属性但没有 continuousId，则生成一个
+        if (continuous && !todo.continuousId) {
+            todo.continuousId = window.generateId();
+        }
         todo.updatedAt = new Date().toISOString();
         window.debouncedSave();
         renderTodoList();
