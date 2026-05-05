@@ -341,13 +341,30 @@ function createTodoItemHtml(todo, number) {
 }
 
 /**
+ * 排序子任务：未完成的在前，已完成的沉底
+ */
+function sortSubtasks(subtasks) {
+    return [...subtasks].sort((a, b) => {
+        if (a.completed !== b.completed) {
+            return a.completed ? 1 : -1;
+        }
+        // 完成状态相同，按order排序，没有order的按添加顺序
+        const orderA = a.order !== undefined ? a.order : subtasks.indexOf(a);
+        const orderB = b.order !== undefined ? b.order : subtasks.indexOf(b);
+        return orderA - orderB;
+    });
+}
+
+/**
  * 创建子任务HTML
  */
 function createSubTasksHtml(subtasks, todoId, parentNumber) {
     const hasManyClass = subtasks.length >= 3 ? 'has-many' : '';
+    // 先排序子任务
+    const sortedSubtasks = sortSubtasks(subtasks);
     return `
         <div class="todo-subtasks ${hasManyClass}">
-            ${subtasks.map((st, index) => `
+            ${sortedSubtasks.map((st, index) => `
                 <div class="subtask-item" data-id="${st.id}" data-todo-id="${todoId}">
                     <span class="subtask-number">${parentNumber}.${index + 1}</span>
                     <input type="checkbox" class="subtask-checkbox" 
@@ -910,6 +927,19 @@ function handleSubtaskInput(event, todoId) {
 }
 
 /**
+ * 更新子任务的 order 属性
+ */
+function updateSubtaskOrder(subtasks) {
+    // 先排序
+    const sortedSubtasks = sortSubtasks(subtasks);
+    // 更新 order
+    sortedSubtasks.forEach((st, index) => {
+        st.order = index;
+    });
+    return sortedSubtasks;
+}
+
+/**
  * 添加子任务
  */
 function addSubtask(todoId, content) {
@@ -919,11 +949,16 @@ function addSubtask(todoId, content) {
         if (!todo.subtasks) {
             todo.subtasks = [];
         }
-        todo.subtasks.push({
+        // 添加新子任务到未完成部分的末尾
+        const newSubtask = {
             id: window.generateId(),
             content: content,
-            completed: false
-        });
+            completed: false,
+            order: 0
+        };
+        todo.subtasks.push(newSubtask);
+        // 更新所有子任务的 order
+        updateSubtaskOrder(todo.subtasks);
         todo.updatedAt = new Date().toISOString();
         window.debouncedSave();
         renderTodoList();
@@ -1002,6 +1037,8 @@ function toggleSubtask(todoId, subtaskId) {
         const subtask = todo.subtasks.find(st => st.id === subtaskId);
         if (subtask) {
             subtask.completed = !subtask.completed;
+            // 更新所有子任务的 order
+            updateSubtaskOrder(todo.subtasks);
             todo.updatedAt = new Date().toISOString();
             window.debouncedSave();
             renderTodoList();
@@ -1019,6 +1056,10 @@ function deleteSubtask(todoId, subtaskId) {
         const index = todo.subtasks.findIndex(st => st.id === subtaskId);
         if (index > -1) {
             todo.subtasks.splice(index, 1);
+            // 更新剩余子任务的 order
+            if (todo.subtasks.length > 0) {
+                updateSubtaskOrder(todo.subtasks);
+            }
             todo.updatedAt = new Date().toISOString();
             window.debouncedSave();
             renderTodoList();
