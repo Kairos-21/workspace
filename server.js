@@ -9,6 +9,7 @@ const fs = require('fs');
 const path = require('path');
 const https = require('https');
 const http = require('http');
+const { execSync } = require('child_process');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -794,6 +795,72 @@ app.post('/api/upload-background', bgUpload.single('background'), (req, res) => 
         res.status(500).json({
             success: false,
             message: err.message || '上传失败'
+        });
+    }
+});
+
+/**
+ * 获取 git 提交记录
+ */
+app.get('/api/git-log', (req, res) => {
+    const { since, until } = req.query;
+
+    if (!since || !until) {
+        return res.status(400).json({
+            success: false,
+            message: '缺少 since/until 参数'
+        });
+    }
+
+    try {
+        const cmd = `git log --since="${since}" --until="${until}" --format="%h|%s|%ai|%an" --no-merges`;
+        const output = execSync(cmd, {
+            cwd: __dirname,
+            encoding: 'utf8',
+            timeout: 5000
+        });
+
+        const commits = output.trim().split('\n').filter(Boolean).map(line => {
+            const [hash, message, date, author] = line.split('|');
+            return { hash, message, date, author };
+        });
+
+        // 按关键词分类
+        const fixKeywords = ['修复', 'fix'];
+        const improveKeywords = ['优化', '改进', '完善', '调整', '重构'];
+        const featureKeywords = ['添加', '新增', '实现', '增加'];
+
+        const categories = {
+            fixes: [],
+            improvements: [],
+            features: [],
+            other: []
+        };
+
+        commits.forEach(c => {
+            const msg = c.message.toLowerCase();
+            if (fixKeywords.some(k => msg.includes(k))) {
+                categories.fixes.push(c);
+            } else if (improveKeywords.some(k => msg.includes(k))) {
+                categories.improvements.push(c);
+            } else if (featureKeywords.some(k => msg.includes(k))) {
+                categories.features.push(c);
+            } else {
+                categories.other.push(c);
+            }
+        });
+
+        console.log(`[GitLog] ${since} ~ ${until}: ${commits.length} commits`);
+        res.json({
+            success: true,
+            data: { commits, categories }
+        });
+    } catch (err) {
+        console.error('[GitLog] 获取失败:', err.message);
+        res.json({
+            success: false,
+            data: { commits: [], categories: { fixes: [], improvements: [], features: [], other: [] } },
+            message: 'Git 记录获取失败（可能不在 git 仓库中）'
         });
     }
 });

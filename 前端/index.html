@@ -11,6 +11,7 @@
     <header class="header">
         <h1 class="header-title">📋 个人工作台</h1>
         <div class="header-actions">
+            <button class="btn btn-secondary" id="weeklyReportBtn" title="周报">📊 周报</button>
             <button class="btn btn-secondary" id="bgBtn" title="更换背景">🎨 背景</button>
             <button class="btn btn-secondary" id="importBtn" title="导入数据">📥 导入</button>
             <button class="btn btn-secondary" id="exportBtn" title="导出数据">📤 导出</button>
@@ -207,8 +208,31 @@
         </div>
     </div>
     <input type="file" id="bgFile" accept="image/*" style="display: none;">
-    
+
+    <!-- 周报弹窗 -->
+    <div class="weekly-report-overlay" id="weeklyReportOverlay" style="display: none;">
+        <div class="weekly-report-modal">
+            <div class="weekly-report-header">
+                <button class="wr-nav-btn" id="wrPrevWeek" title="上一周">◀</button>
+                <div class="weekly-report-title">
+                    <h2>📊 周报</h2>
+                    <span class="weekly-report-range" id="wrWeekRange">---</span>
+                </div>
+                <button class="wr-nav-btn" id="wrNextWeek" title="下一周">▶</button>
+                <button class="wr-close-btn" id="wrCloseBtn" title="关闭">×</button>
+            </div>
+            <div class="weekly-report-body" id="wrBody">
+                <!-- 动态渲染 -->
+            </div>
+            <div class="weekly-report-footer">
+                <button class="btn btn-secondary" id="wrCloseBtn2" onclick="document.getElementById('wrCloseBtn').click()">关闭</button>
+                <button class="btn btn-primary" id="wrSaveBtn">💾 保存报告</button>
+            </div>
+        </div>
+    </div>
+
     <script src="js/pomodoro.js"></script>
     <script src="js/memo.js"></script>
+    <script src="js/weekly-report.js"></script>
 </body>
 </html>
