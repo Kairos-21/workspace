@@ -287,6 +287,9 @@ function renderTodoList() {
     
     // 绑定子任务单击/双击事件
     bindSubtaskClickEvents();
+
+    // 绑定子任务拖拽排序事件
+    bindSubtaskDragEvents();
 }
 
 /**
@@ -369,12 +372,13 @@ function createSubTasksHtml(subtasks, todoId, parentNumber) {
     return `
         <div class="todo-subtasks ${hasManyClass}">
             ${sortedSubtasks.map((st, index) => `
-                <div class="subtask-item" data-id="${st.id}" data-todo-id="${todoId}">
+                <div class="subtask-item" data-id="${st.id}" data-todo-id="${todoId}" draggable="true">
+                    <span class="subtask-drag-handle" title="拖动排序">⋮⋮</span>
                     <span class="subtask-number">${parentNumber}.${index + 1}</span>
-                    <input type="checkbox" class="subtask-checkbox" 
-                        ${st.completed ? 'checked' : ''} 
+                    <input type="checkbox" class="subtask-checkbox"
+                        ${st.completed ? 'checked' : ''}
                         onchange="toggleSubtask('${todoId}', '${st.id}')">
-                    <span class="subtask-content ${st.completed ? 'completed' : ''}" 
+                    <span class="subtask-content ${st.completed ? 'completed' : ''}"
                         data-todo-id="${todoId}"
                         data-subtask-id="${st.id}">${escapeHtml(st.content)}</span>
                     <button class="subtask-delete" onclick="deleteSubtask('${todoId}', '${st.id}')">×</button>
@@ -510,6 +514,92 @@ function bindSubtaskClickEvents() {
             }
         };
     });
+}
+
+/**
+ * 绑定子任务拖拽排序事件
+ */
+function bindSubtaskDragEvents() {
+    const subtaskItems = todoListEl.querySelectorAll('.subtask-item');
+    if (subtaskItems.length < 2) return;
+
+    let draggedItem = null;
+    let dragFromHandle = false;
+
+    // 全局 mouseup 重置标志，防止卡死
+    const resetFlag = () => { dragFromHandle = false; };
+
+    subtaskItems.forEach(item => {
+        const handle = item.querySelector('.subtask-drag-handle');
+        if (!handle) return;
+
+        // 只有从手柄按下才开始拖拽
+        handle.onmousedown = (e) => {
+            dragFromHandle = true;
+            document.addEventListener('mouseup', resetFlag, { once: true });
+        };
+
+        item.ondragstart = (e) => {
+            if (!dragFromHandle) {
+                e.preventDefault();
+                return;
+            }
+            draggedItem = item;
+            item.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', '');
+            e.stopPropagation(); // 阻止冒泡到父级 todo-item 的拖拽
+        };
+
+        item.ondragend = () => {
+            item.classList.remove('dragging');
+            if (draggedItem) {
+                saveSubtaskOrder(item.dataset.todoId);
+            }
+            draggedItem = null;
+            dragFromHandle = false;
+        };
+
+        item.ondragover = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!draggedItem || draggedItem === item) return;
+            if (draggedItem.dataset.todoId !== item.dataset.todoId) return;
+
+            const rect = item.getBoundingClientRect();
+            const midY = rect.top + rect.height / 2;
+
+            if (e.clientY < midY) {
+                item.parentNode.insertBefore(draggedItem, item);
+            } else {
+                item.parentNode.insertBefore(draggedItem, item.nextSibling);
+            }
+        };
+    });
+}
+
+/**
+ * 保存子任务排序
+ */
+function saveSubtaskOrder(todoId) {
+    const todos = getCurrentTodos();
+    const todo = todos.find(t => t.id === todoId);
+    if (!todo || !todo.subtasks) return;
+
+    const container = document.querySelector(`.todo-subtasks[data-todo-id]`);
+    if (!container) {
+        // 查找该 todo 的 subtask container
+        const subtaskItems = document.querySelectorAll(`.subtask-item[data-todo-id="${todoId}"]`);
+        if (subtaskItems.length === 0) return;
+
+        subtaskItems.forEach((item, index) => {
+            const st = todo.subtasks.find(s => s.id === item.dataset.id);
+            if (st) st.order = index;
+        });
+    }
+
+    todo.updatedAt = new Date().toISOString();
+    window.debouncedSave();
 }
 
 /**
@@ -953,12 +1043,17 @@ function addSubtask(todoId, content) {
         if (!todo.subtasks) {
             todo.subtasks = [];
         }
-        // 添加新子任务到未完成部分的末尾
+        // 找到最后一个未完成子任务的 order，新子任务插在它后面
+        const uncompleted = todo.subtasks.filter(st => !st.completed);
+        const maxOrder = uncompleted.length > 0
+            ? Math.max(...uncompleted.map(st => st.order ?? 0))
+            : -1;
+
         const newSubtask = {
             id: window.generateId(),
             content: content,
             completed: false,
-            order: 0
+            order: maxOrder + 1
         };
         todo.subtasks.push(newSubtask);
         // 更新所有子任务的 order

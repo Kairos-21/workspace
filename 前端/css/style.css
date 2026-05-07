@@ -459,6 +459,30 @@ input, textarea, select, [contenteditable="true"] {
     color: var(--priority-high);
 }
 
+.subtask-drag-handle {
+    opacity: 0;
+    cursor: grab;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    padding: 0 2px;
+    flex-shrink: 0;
+    user-select: none;
+    letter-spacing: -1px;
+}
+
+.subtask-item:hover .subtask-drag-handle {
+    opacity: 0.5;
+}
+
+.subtask-item:hover .subtask-drag-handle:hover {
+    opacity: 1;
+    color: var(--primary);
+}
+
+.subtask-item.dragging {
+    opacity: 0.4;
+}
+
 /* 添加子任务区域 */
 .add-subtask-area {
     margin-top: var(--spacing-sm);
