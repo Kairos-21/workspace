@@ -27,7 +27,10 @@
             <div class="module todo-module" id="todoModule">
                 <div class="module-header">
                     <h2 class="module-title">📝 <span id="todoDateDisplay">今天</span></h2>
-                    <button class="btn btn-primary btn-sm" id="addTodoBtn">+ 新增</button>
+                    <div class="header-buttons">
+                        <button class="btn btn-sm" id="globalTodoBtn" title="查看所有日期的待办事项">🔍 全局</button>
+                        <button class="btn btn-primary btn-sm" id="addTodoBtn">+ 新增</button>
+                    </div>
                 </div>
                 <div class="module-content">
                     <div class="todo-input-wrapper">
@@ -209,6 +212,34 @@
     </div>
     <input type="file" id="bgFile" accept="image/*" style="display: none;">
 
+    <!-- 全局待办弹窗 -->
+    <div class="global-todo-overlay" id="globalTodoOverlay" style="display: none;">
+        <div class="global-todo-modal">
+            <div class="global-todo-header">
+                <h2>📋 全局待办视图</h2>
+                <div class="global-todo-toolbar">
+                    <select id="globalDateFilter" class="global-filter-select">
+                        <option value="7">最近 7 天</option>
+                        <option value="14">最近 14 天</option>
+                        <option value="30">最近 30 天</option>
+                        <option value="all">全部日期</option>
+                    </select>
+                    <label class="global-hide-done">
+                        <input type="checkbox" id="globalHideDone" checked> 隐藏已完成
+                    </label>
+                </div>
+                <button class="wr-close-btn" id="globalTodoClose" title="关闭">×</button>
+            </div>
+            <div class="global-todo-body" id="globalTodoBody">
+                <!-- 动态渲染 -->
+            </div>
+            <div class="global-todo-footer">
+                <span class="global-todo-summary" id="globalTodoSummary"></span>
+                <button class="btn btn-secondary" onclick="document.getElementById('globalTodoClose').click()">关闭</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 周报弹窗 -->
     <div class="weekly-report-overlay" id="weeklyReportOverlay" style="display: none;">
         <div class="weekly-report-modal">
@@ -234,5 +265,6 @@
     <script src="js/pomodoro.js"></script>
     <script src="js/memo.js"></script>
     <script src="js/weekly-report.js"></script>
+    <script src="js/todo-global.js"></script>
 </body>
 </html>

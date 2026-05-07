@@ -106,17 +106,21 @@ function carryOverContinuousTodos() {
         if (yesterdayTodo.continuous && yesterdayTodo.continuousId && !isTodoFullyCompleted(yesterdayTodo)) {
             // 避免重复添加
             if (!todayContinuousIds.has(yesterdayTodo.continuousId)) {
-                // 复制待办事项到今天，保持子任务状态
+                // 复制待办事项到今天，只保留未完成的子任务
                 const newTodo = {
                     id: window.generateId(),
                     content: yesterdayTodo.content,
                     priority: yesterdayTodo.priority,
                     completed: yesterdayTodo.completed,
-                    subtasks: yesterdayTodo.subtasks ? yesterdayTodo.subtasks.map(st => ({
-                        id: window.generateId(),
-                        content: st.content,
-                        completed: st.completed
-                    })) : [],
+                    subtasks: yesterdayTodo.subtasks
+                        ? yesterdayTodo.subtasks
+                            .filter(st => !st.completed)
+                            .map(st => ({
+                                id: window.generateId(),
+                                content: st.content,
+                                completed: false
+                            }))
+                        : [],
                     createdAt: new Date().toISOString(),
                     updatedAt: new Date().toISOString(),
                     continuous: true,

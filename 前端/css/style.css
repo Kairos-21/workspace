@@ -2014,3 +2014,236 @@ body {
         width: 100%;
     }
 }
+
+/* ========================================
+   全局待办视图样式
+   ======================================== */
+
+.global-todo-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+}
+
+.global-todo-modal {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    width: 90vw;
+    max-width: 700px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    overflow: hidden;
+}
+
+.global-todo-header {
+    display: flex;
+    align-items: center;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border-color);
+    gap: 16px;
+    flex-shrink: 0;
+}
+
+.global-todo-header h2 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.global-todo-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+}
+
+.global-filter-select {
+    padding: 5px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: var(--bg-primary);
+    font-size: 0.82rem;
+    color: var(--text-primary);
+    cursor: pointer;
+}
+
+.global-hide-done {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.global-hide-done input {
+    cursor: pointer;
+    margin: 0;
+}
+
+.global-todo-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 20px;
+}
+
+.global-todo-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.global-todo-body::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+}
+
+.global-todo-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    border-top: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+.global-todo-summary {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+}
+
+/* 单条待办 */
+.gt-item {
+    border-bottom: 1px solid var(--border-color);
+}
+
+.gt-item:last-child {
+    border-bottom: none;
+}
+
+.gt-item.gt-completed .gt-content {
+    text-decoration: line-through;
+    color: var(--text-secondary);
+}
+
+.gt-item-main {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 4px;
+    min-height: 42px;
+}
+
+.gt-checkbox {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    flex-shrink: 0;
+    accent-color: var(--primary);
+}
+
+.gt-date-badge {
+    font-size: 0.75rem;
+    padding: 2px 7px;
+    border-radius: 10px;
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.gt-date-badge.gt-date-today {
+    background: rgba(52, 152, 219, 0.15);
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.gt-priority-badge {
+    font-size: 0.7rem;
+    padding: 1px 6px;
+    border-radius: 8px;
+    color: white;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.gt-content {
+    flex: 1;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.gt-subtask-toggle {
+    flex-shrink: 0;
+    border: none;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-sm);
+    padding: 2px 7px;
+    font-size: 0.7rem;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all 0.15s;
+}
+
+.gt-subtask-toggle:hover {
+    background: var(--primary);
+    color: white;
+}
+
+.gt-subtask-stat {
+    font-weight: 600;
+}
+
+/* 子任务区域 */
+.gt-subtasks {
+    padding: 0 4px 8px 36px;
+}
+
+.gt-subtask-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 0;
+    font-size: 0.82rem;
+    color: var(--text-primary);
+}
+
+.gt-subtask-row.gt-completed span {
+    text-decoration: line-through;
+    color: var(--text-secondary);
+}
+
+.gt-sub-check {
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+    flex-shrink: 0;
+    accent-color: var(--primary);
+}
+
+@media (max-width: 768px) {
+    .global-todo-modal {
+        width: 95vw;
+        max-height: 90vh;
+        border-radius: var(--radius-md);
+    }
+
+    .global-todo-header {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .global-todo-toolbar {
+        order: 3;
+    }
+}

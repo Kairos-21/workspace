@@ -365,6 +365,7 @@ function initAllModules() {
     initPomodoroModule();
     initMemoModule();
     initWeeklyReportModule();
+    initGlobalTodoModule();
 }
 
 /**
