@@ -162,6 +162,17 @@ function initTodoModule() {
     // 把前一天的持续待办复制到今天
     carryOverContinuousTodos();
     
+    // Tab 切换优先级（排除日常）
+    const tabCycle = ['medium', 'high', 'low'];
+    todoInputEl.onkeydown = (e) => {
+        if (e.key === 'Tab') {
+            e.preventDefault();
+            const idx = tabCycle.indexOf(todoPriorityEl.value);
+            const next = (idx + 1) % tabCycle.length;
+            todoPriorityEl.value = tabCycle[next];
+        }
+    };
+
     // 绑定事件
     addTodoBtnEl.onclick = showAddTodoModal;
     todoInputEl.onkeypress = (e) => {
