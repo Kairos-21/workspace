@@ -44,6 +44,7 @@ let pomodoroTimeEl = null;
 let pomodoroStatusEl = null;
 let pomodoroStartBtnEl = null;
 let pomodoroResetBtnEl = null;
+let pomodoroSkipBtnEl = null;
 let pomodoroCircleEl = null;
 let progressRingEl = null;
 let currentCountEl = null;
@@ -72,6 +73,7 @@ function initPomodoroModule() {
     pomodoroStatusEl = document.getElementById('pomodoroStatus');
     pomodoroStartBtnEl = document.getElementById('pomodoroStartBtn');
     pomodoroResetBtnEl = document.getElementById('pomodoroResetBtn');
+    pomodoroSkipBtnEl = document.getElementById('pomodoroSkipBtn');
     pomodoroCircleEl = document.getElementById('pomodoroCircle');
     progressRingEl = document.getElementById('progressRing');
     currentCountEl = document.getElementById('currentCount');
@@ -100,6 +102,7 @@ function initPomodoroModule() {
     // 绑定事件
     pomodoroStartBtnEl.onclick = togglePomodoro;
     pomodoroResetBtnEl.onclick = resetPomodoro;
+    pomodoroSkipBtnEl.onclick = skipBreak;
     pomodoroCircleEl.onclick = togglePomodoro;
     pomodoroSettingsBtnEl.onclick = toggleSettingsPanel;
     
@@ -759,6 +762,43 @@ function resetPomodoro() {
 }
 
 /**
+ * 跳过休息，直接开始下一个番茄钟
+ */
+function skipBreak() {
+    if (pomodoroState !== PomodoroState.BREAK && pomodoroState !== PomodoroState.PAUSED) return;
+
+    // 检测状态：如果是从 BREAK 暂停的，totalTime 会是休息时长
+    const settings = window.appData.pomodoroSettings;
+    const workSeconds = settings.workDuration * 60;
+    const wasBreak = totalTime !== workSeconds;
+    if (!wasBreak && pomodoroState === PomodoroState.PAUSED) return; // 暂停的工作，不是休息
+
+    if (timer) {
+        clearInterval(timer);
+        timer = null;
+    }
+    endTime = null;
+
+    window.showToast('⏩ 跳过休息，开始下一个番茄钟');
+
+    // 切换到工作
+    pomodoroState = PomodoroState.WORKING;
+    currentTime = workSeconds;
+    totalTime = workSeconds;
+    pomodoroStatusEl.textContent = '工作中';
+    pomodoroCircleEl.classList.add('work');
+    pomodoroCircleEl.classList.remove('break');
+    pomodoroStartBtnEl.textContent = '⏸ 暂停';
+    pomodoroSkipBtnEl.style.display = 'none';
+
+    // 自动开始工作计时
+    endTime = Date.now() + (currentTime * 1000);
+    savePomodoroState();
+    updatePomodoroDisplay();
+    timer = setInterval(tick, 100);
+}
+
+/**
  * 完成一个番茄钟
  */
 function completePomodoro() {
@@ -812,7 +852,7 @@ function completePomodoro() {
             pomodoroCircleEl.classList.add('work');
             pomodoroCircleEl.classList.remove('break');
             pomodoroStartBtnEl.textContent = '⏸ 暂停';
-            
+
             // 自动开始下一个番茄钟
             endTime = Date.now() + (currentTime * 1000);
             savePomodoroState();
@@ -828,8 +868,7 @@ function completePomodoro() {
             pomodoroCircleEl.classList.remove('work');
             pomodoroCircleEl.classList.add('break');
             pomodoroStartBtnEl.textContent = '⏸ 暂停';
-            
-            // 自动开始休息计时
+            pomodoroSkipBtnEl.style.display = '';
             endTime = Date.now() + (currentTime * 1000);
             savePomodoroState();
             updatePomodoroDisplay();
@@ -907,6 +946,11 @@ function updatePomodoroDisplay() {
     const progress = 1 - (currentTime / totalTime);
     const offset = circumference * (1 - progress);
     progressRingEl.style.strokeDashoffset = offset;
+
+    // 休息状态时显示跳过按钮
+    if (pomodoroSkipBtnEl) {
+        pomodoroSkipBtnEl.style.display = (pomodoroState === PomodoroState.BREAK) ? '' : 'none';
+    }
 }
 
 /**
