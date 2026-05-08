@@ -2271,3 +2271,302 @@ body {
         order: 3;
     }
 }
+
+/* ========================================
+   游戏化系统 - 成长花园
+   ======================================== */
+
+/* Header 游戏按钮 */
+.btn-game {
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 1px solid #56ab2f;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-family: inherit;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    background: linear-gradient(135deg, rgba(86, 171, 47, 0.12), rgba(168, 224, 99, 0.08));
+    color: #3d7a1a;
+    font-weight: 600;
+}
+
+.btn-game:hover {
+    background: linear-gradient(135deg, rgba(86, 171, 47, 0.22), rgba(168, 224, 99, 0.14));
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(86, 171, 47, 0.15);
+}
+
+/* 游戏面板行 */
+.row-game {
+    /* 继承 .row 间距 */
+}
+
+.game-module {
+    /* 继承 .module */
+}
+
+/* 三栏布局 */
+.game-layout {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr 1fr;
+    gap: var(--spacing-lg);
+}
+
+.game-section {
+    /* 各栏通用 */
+}
+
+.game-section-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+/* --- 左栏：等级 + XP --- */
+.game-level-badge {
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-align: center;
+    padding: 16px;
+    border-radius: var(--radius-lg);
+    background: linear-gradient(135deg, #a8e063, #56ab2f);
+    color: white;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    margin-bottom: 16px;
+    transition: transform 0.2s;
+}
+
+.game-level-badge.level-up {
+    animation: levelUpBounce 0.6s ease;
+}
+
+@keyframes levelUpBounce {
+    0%   { transform: scale(1); }
+    25%  { transform: scale(1.18); }
+    40%  { transform: scale(0.95); }
+    60%  { transform: scale(1.06); }
+    80%  { transform: scale(0.98); }
+    100% { transform: scale(1); }
+}
+
+.game-xp-bar-container {
+    height: 14px;
+    background: var(--border-color);
+    border-radius: 7px;
+    overflow: hidden;
+    margin-bottom: 4px;
+    position: relative;
+}
+
+.game-xp-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #56ab2f, #a8e063);
+    border-radius: 7px;
+    transition: width 0.5s ease;
+}
+
+.game-xp-text {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    display: block;
+    text-align: right;
+    margin-bottom: 12px;
+}
+
+.game-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.game-stat-item {
+    font-size: 0.82rem;
+    color: var(--text-primary);
+    padding: 6px 10px;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-sm);
+}
+
+/* --- 中栏：每日任务 --- */
+.game-quests-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.game-quest-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: var(--radius-sm);
+    background: var(--bg-secondary);
+    transition: all 0.2s;
+}
+
+.game-quest-item.completed {
+    opacity: 0.55;
+    background: rgba(86, 171, 47, 0.06);
+}
+
+.game-quest-icon {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.game-quest-name {
+    flex: 1;
+    font-size: 0.84rem;
+    color: var(--text-primary);
+}
+
+.game-quest-item.completed .game-quest-name {
+    text-decoration: line-through;
+}
+
+.game-quest-progress {
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.game-quest-item.completed .game-quest-progress {
+    color: #56ab2f;
+}
+
+.game-quest-check {
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+/* --- 右栏：连胜 + 成就 --- */
+.game-streak-display {
+    text-align: center;
+    padding: 16px;
+    background: linear-gradient(135deg, #ffd89b, #f093fb);
+    border-radius: var(--radius-lg);
+    margin-bottom: 16px;
+}
+
+.game-streak-num {
+    font-size: 2.8rem;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    line-height: 1;
+    display: block;
+}
+
+.game-streak-label {
+    font-size: 0.9rem;
+    color: #fff;
+    opacity: 0.9;
+    margin-top: 4px;
+    display: block;
+}
+
+.game-achievements-mini {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.game-achievement-badge {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    background: var(--bg-secondary);
+    border-radius: 50%;
+    border: 2px solid #f0c040;
+    cursor: default;
+    transition: transform 0.2s;
+}
+
+.game-achievement-badge:hover {
+    transform: scale(1.15);
+}
+
+/* 全部成就弹窗 */
+.game-all-achievements {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    padding: 8px 0;
+}
+
+.game-ach-card {
+    text-align: center;
+    padding: 12px 8px;
+    border-radius: var(--radius-md);
+    background: var(--bg-secondary);
+    transition: all 0.2s;
+}
+
+.game-ach-card:hover {
+    background: #EEF2F7;
+}
+
+.game-ach-card.locked {
+    opacity: 0.35;
+    filter: grayscale(1);
+}
+
+.game-ach-icon {
+    font-size: 1.8rem;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.game-ach-name {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+}
+
+.game-ach-desc {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+}
+
+.game-ach-date {
+    font-size: 0.65rem;
+    color: var(--primary);
+    margin-top: 4px;
+}
+
+/* 响应式 */
+@media (max-width: 900px) {
+    .game-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .game-all-achievements {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .game-all-achievements {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .game-level-badge {
+        font-size: 1.2rem;
+        padding: 12px;
+    }
+
+    .game-streak-num {
+        font-size: 2.2rem;
+    }
+}

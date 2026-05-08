@@ -946,6 +946,13 @@ function toggleTodo(id) {
     if (todo) {
         todo.completed = !todo.completed;
         todo.updatedAt = new Date().toISOString();
+        // 通知游戏系统
+        if (todo.completed && window.notifyGame) {
+            window.notifyGame('todo_completed', { priority: todo.priority, todoId: todo.id });
+            if (todo.priority === 'daily') {
+                window.notifyGame('daily_done', { todoId: todo.id });
+            }
+        }
         window.debouncedSave();
         renderTodoList();
     }

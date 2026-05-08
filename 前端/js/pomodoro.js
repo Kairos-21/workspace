@@ -886,6 +886,10 @@ function recordCompletedPomodoro() {
     
     window.appData.pomodoroRecords = records;
     console.log('📝 记录完成的番茄钟，今日:', completedPomodoros, '条记录:', records);
+    // 通知游戏系统
+    if (window.notifyGame) {
+        window.notifyGame('pomodoro_completed', {});
+    }
     window.debouncedSave();
 }
 

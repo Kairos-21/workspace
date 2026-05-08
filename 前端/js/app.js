@@ -366,6 +366,7 @@ function initAllModules() {
     initMemoModule();
     initWeeklyReportModule();
     initGlobalTodoModule();
+    initGameSystem();
 }
 
 /**

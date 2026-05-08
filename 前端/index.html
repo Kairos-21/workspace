@@ -15,6 +15,8 @@
             <button class="btn btn-secondary" id="bgBtn" title="更换背景">🎨 背景</button>
             <button class="btn btn-secondary" id="importBtn" title="导入数据">📥 导入</button>
             <button class="btn btn-secondary" id="exportBtn" title="导出数据">📤 导出</button>
+            <button class="btn btn-game" id="gameEntryBtn" title="成长花园">🌱 Lv.<span id="gameHeaderLevel">1</span></button>
+            <button class="btn btn-game" id="achievementsBtn" title="成就徽章">🏆</button>
         </div>
     </header>
     <input type="file" id="importFile" accept=".json" style="display: none;">
@@ -124,6 +126,40 @@
                                 <button class="btn btn-sm" id="soundUploadBtn" style="width: 100%;">➕ 添加自定义提示音</button>
                                 <small style="color: var(--text-secondary); font-size: 0.75rem; margin-top: 4px;">支持 MP3、WAV、OGG、M4A 格式</small>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 游戏化面板行 -->
+        <section class="row row-game" id="gamePanel" style="display: none;">
+            <div class="module game-module">
+                <div class="module-header">
+                    <h2 class="module-title">🌱 成长花园</h2>
+                    <button class="btn btn-sm" id="gamePanelToggle" title="收起">▲</button>
+                </div>
+                <div class="module-content">
+                    <div class="game-layout">
+                        <div class="game-section game-level-section">
+                            <div class="game-level-badge" id="gameLevelBadge">🌿 Lv.1</div>
+                            <div class="game-xp-bar-container">
+                                <div class="game-xp-bar" id="gameXpBar" style="width: 0%;"></div>
+                                <span class="game-xp-text" id="gameXpText">0 / 100 XP</span>
+                            </div>
+                            <div class="game-stats" id="gameStats"></div>
+                        </div>
+                        <div class="game-section game-quests-section">
+                            <h3 class="game-section-title">📋 今日任务</h3>
+                            <div class="game-quests-list" id="gameQuestsList"></div>
+                        </div>
+                        <div class="game-section game-streak-section">
+                            <div class="game-streak-display" id="gameStreakDisplay">
+                                <span class="game-streak-num" id="gameStreakNum">0</span>
+                                <span class="game-streak-label">天连胜</span>
+                            </div>
+                            <h3 class="game-section-title">🏆 最新成就</h3>
+                            <div class="game-achievements-mini" id="gameAchievementsMini"></div>
                         </div>
                     </div>
                 </div>
@@ -264,6 +300,7 @@
 
     <script src="js/pomodoro.js"></script>
     <script src="js/memo.js"></script>
+    <script src="js/game-system.js"></script>
     <script src="js/weekly-report.js"></script>
     <script src="js/todo-global.js"></script>
 </body>
