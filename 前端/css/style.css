@@ -425,6 +425,7 @@ input, textarea, select, [contenteditable="true"] {
     flex: 1;
     min-width: 0;
     cursor: pointer;
+    white-space: pre-wrap;
 }
 
 .subtask-content:hover {
@@ -524,7 +525,11 @@ input, textarea, select, [contenteditable="true"] {
     border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
     font-size: 0.85rem;
+    font-family: inherit;
     background: var(--bg-primary);
+    resize: none;
+    overflow: hidden;
+    min-height: 1.6em;
 }
 
 .add-subtask-input:focus {

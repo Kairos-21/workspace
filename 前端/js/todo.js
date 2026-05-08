@@ -309,11 +309,12 @@ function createTodoItemHtml(todo, number) {
                     <span class="add-subtask-text">添加子任务...</span>
                 </div>
                 <div class="add-subtask-input-wrapper" style="display: none;">
-                    <input type="text" class="add-subtask-input" 
+                    <textarea class="add-subtask-input"
                         placeholder="输入子任务内容..."
                         data-todo-id="${todo.id}"
-                        onkeypress="handleSubtaskInput(event, '${todo.id}')"
-                        onblur="hideSubtaskInput('${todo.id}')">
+                        onkeydown="handleSubtaskInput(event, '${todo.id}')"
+                        onblur="hideSubtaskInput('${todo.id}')"
+                        rows="1"></textarea>
                 </div>
             </div>
         ` 
@@ -1016,11 +1017,23 @@ function hideSubtaskInput(todoId) {
  */
 function handleSubtaskInput(event, todoId) {
     if (event.key === 'Enter') {
+        if (event.ctrlKey) {
+            // Ctrl+回车：显式插入换行
+            event.preventDefault();
+            const input = event.target;
+            const start = input.selectionStart;
+            const end = input.selectionEnd;
+            const val = input.value;
+            input.value = val.substring(0, start) + '\n' + val.substring(end);
+            input.selectionStart = input.selectionEnd = start + 1;
+            return;
+        }
+        // 普通回车：完成添加
+        event.preventDefault();
         const input = event.target;
         const content = input.value.trim();
-        
         if (content) {
-            subtaskAddedByEnter = true; // 标记已通过回车添加
+            subtaskAddedByEnter = true;
             addSubtask(todoId, content);
             input.value = '';
         }
@@ -1080,22 +1093,27 @@ function editSubtaskContent(todoId, subtaskId) {
     
     const currentContent = contentEl.textContent;
     
-    // 创建输入框
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.className = 'subtask-edit-input';
-    input.value = currentContent;
-    input.style.cssText = 'flex: 1; padding: 2px 6px; font-size: 0.85rem; border: 1px solid var(--primary); border-radius: 4px;';
-    
+    // 创建 textarea（支持多行）
+    const ta = document.createElement('textarea');
+    ta.className = 'subtask-edit-input';
+    ta.value = currentContent;
+    ta.rows = 1;
+    ta.style.cssText = 'flex: 1; padding: 2px 6px; font-size: 0.85rem; border: 1px solid var(--primary); border-radius: 4px; resize: none; font-family: inherit; overflow: hidden;';
+
+    function autoResize() {
+        ta.style.height = 'auto';
+        ta.style.height = ta.scrollHeight + 'px';
+    }
+
     // 替换内容
     contentEl.style.display = 'none';
-    contentEl.parentNode.insertBefore(input, contentEl);
-    input.focus();
-    input.select();
-    
+    contentEl.parentNode.insertBefore(ta, contentEl);
+    ta.focus();
+    ta.select();
+
     // 保存函数
     const saveEdit = () => {
-        const newContent = input.value.trim();
+        const newContent = ta.value.trim();
         if (newContent && newContent !== currentContent) {
             const todos = getCurrentTodos();
             const todo = todos.find(t => t.id === todoId);
@@ -1109,27 +1127,37 @@ function editSubtaskContent(todoId, subtaskId) {
             }
         }
         // 恢复显示
-        input.remove();
+        ta.remove();
         contentEl.style.display = '';
         renderTodoList();
     };
-    
+
     // 失焦保存
-    input.onblur = saveEdit;
-    
-    // 回车保存
-    input.onkeypress = (e) => {
+    ta.onblur = saveEdit;
+
+    // 键盘处理
+    ta.onkeydown = (e) => {
         if (e.key === 'Enter') {
-            input.blur();
+            if (e.ctrlKey) {
+                // Ctrl+回车：显式插入换行
+                e.preventDefault();
+                const start = ta.selectionStart;
+                const end = ta.selectionEnd;
+                const val = ta.value;
+                ta.value = val.substring(0, start) + '\n' + val.substring(end);
+                ta.selectionStart = ta.selectionEnd = start + 1;
+                autoResize();
+                return;
+            }
+            // 普通回车：保存
+            e.preventDefault();
+            ta.blur();
+        } else if (e.key === 'Escape') {
+            ta.value = currentContent;
+            ta.blur();
         }
-    };
-    
-    // ESC 取消
-    input.onkeydown = (e) => {
-        if (e.key === 'Escape') {
-            input.value = currentContent; // 恢复原值
-            input.blur();
-        }
+        // 其他按键：自动调整高度
+        setTimeout(autoResize, 0);
     };
 }
 
