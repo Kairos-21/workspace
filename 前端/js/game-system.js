@@ -324,6 +324,11 @@ function notifyGame(eventType, data) {
 
     switch (eventType) {
         case 'todo_completed':
+            // 测试样例不增加经验
+            if (/^try\d+$/i.test(data.content || '')) {
+                window.showToast('🧪 该待办为测试样例，不增加经验值', 2000);
+                break;
+            }
             xpGained = 10;
             gd.stats.totalTodosCompleted++;
             if (data.priority === 'high') {
