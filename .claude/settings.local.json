@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node server.js)",
+      "Bash(curl -s \"http://localhost:5000/api/git-log?since=2026-04-01&until=2026-05-07\")",
+      "Bash(curl -s \"http://localhost:5000/api/data\")",
+      "Bash(curl -s \"http://localhost:5000/\")",
+      "Bash(curl *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git checkout *)",
+      "Bash(git merge *)",
+      "Bash(git commit *)",
+      "Bash(git branch *)",
+      "Bash(gh auth *)",
+      "Bash(npm ls *)",
+      "Bash(node -e \"console.log\\('node ok'\\)\")",
+      "Bash(npx *)",
+      "Bash(pip3 list *)",
+      "Bash(pip list *)",
+      "Bash(pip install *)",
+      "Read(//c/Program Files \\(x86\\)/Microsoft/Edge/Application/**)",
+      "Read(//c/Program Files/Microsoft/Edge/Application/**)",
+      "Bash(python *)",
+      "Bash(/c/Program Files \\(x86\\)/Microsoft/Edge/Application/msedge.exe *)"
+    ]
+  }
+}
