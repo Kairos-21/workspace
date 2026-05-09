@@ -2451,6 +2451,31 @@ body {
     flex-shrink: 0;
 }
 
+/* 全部日常待办完成特效 */
+.game-quest-item.all-daily-done {
+    opacity: 1;
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.12), rgba(255, 180, 50, 0.18));
+    border: 1px solid rgba(255, 200, 50, 0.4);
+    box-shadow: 0 0 12px rgba(255, 200, 50, 0.3);
+    animation: dailyAllGlow 2s ease-in-out infinite alternate;
+}
+
+.game-quest-item.all-daily-done .game-quest-name {
+    text-decoration: none;
+    color: #d4a017;
+    font-weight: 700;
+}
+
+.game-quest-item.all-daily-done .game-quest-progress {
+    color: #d4a017;
+    font-weight: 700;
+}
+
+@keyframes dailyAllGlow {
+    from { box-shadow: 0 0 8px rgba(255, 200, 50, 0.2); }
+    to   { box-shadow: 0 0 18px rgba(255, 200, 50, 0.5); }
+}
+
 /* --- 右栏：连胜 + 成就 --- */
 .game-streak-display {
     text-align: center;

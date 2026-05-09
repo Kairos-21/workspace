@@ -30,7 +30,7 @@ const QUEST_DEFS = [
     { id: "todo_3",    name: "完成 3 个待办",      icon: "📝", target: 3, check: "todos" },
     { id: "pomodoro_2",name: "完成 2 个番茄钟",    icon: "🍅", target: 2, check: "pomodoros" },
     { id: "high_1",    name: "完成 1 个高优待办",  icon: "🔥", target: 1, check: "highPriority" },
-    { id: "daily_all", name: "完成所有日常待办",   icon: "🔄", target: 1, check: "dailyAll" },
+    { id: "daily_all", name: "完成日常待办（可缺1）", icon: "🔄", target: 1, check: "dailyAll" },
 ];
 
 // 事件去重集合（防止短时间内同一事件重复处理）
@@ -112,6 +112,8 @@ function _refreshDailyQuests() {
 
     gd.dailyQuests.date = today;
     gd.dailyQuests.allCompleted = false;
+    gd.dailyQuests.fullBonusClaimed = false;
+    gd.dailyQuests.dailyAllBonusClaimed = false;
 
     gd.dailyQuests.quests = QUEST_DEFS.map(q => ({
         id: q.id,
@@ -125,7 +127,10 @@ function _refreshDailyQuests() {
     const completedTodos = todosToday.filter(t => t.completed).length;
     const completedHigh = todosToday.filter(t => t.priority === 'high' && t.completed).length;
     const dailyTodos = todosToday.filter(t => t.priority === 'daily');
-    const dailyAllDone = dailyTodos.length > 0 && dailyTodos.every(t => t.completed);
+    const dailyIncomplete = dailyTodos.filter(t => !t.completed).length;
+    const dailyAllDone = dailyTodos.length > 0 && dailyIncomplete === 0;
+    // 至多1项日常待办未完成即算通过
+    const dailyMostlyDone = dailyTodos.length > 0 && dailyIncomplete <= 1;
 
     const todayPomo = (window.appData.pomodoroRecords || []).find(r => r.date === today);
     const pomoCompleted = todayPomo ? todayPomo.completed : 0;
@@ -135,7 +140,7 @@ function _refreshDailyQuests() {
             case "todo_3":    q.progress = Math.min(completedTodos, q.target); break;
             case "pomodoro_2":q.progress = Math.min(pomoCompleted, q.target); break;
             case "high_1":    q.progress = Math.min(completedHigh, q.target); break;
-            case "daily_all": q.progress = dailyAllDone ? 1 : 0; break;
+            case "daily_all": q.progress = dailyMostlyDone ? 1 : 0; q._allDailyDone = dailyAllDone; break;
         }
         q.completed = q.progress >= q.target;
     });
@@ -149,7 +154,9 @@ function _updateDailyQuestProgress() {
     const completedTodos = todosToday.filter(t => t.completed).length;
     const completedHigh = todosToday.filter(t => t.priority === 'high' && t.completed).length;
     const dailyTodos = todosToday.filter(t => t.priority === 'daily');
-    const dailyAllDone = dailyTodos.length > 0 && dailyTodos.every(t => t.completed);
+    const dailyIncomplete = dailyTodos.filter(t => !t.completed).length;
+    const dailyAllDone = dailyTodos.length > 0 && dailyIncomplete === 0;
+    const dailyMostlyDone = dailyTodos.length > 0 && dailyIncomplete <= 1;
 
     const todayPomo = (window.appData.pomodoroRecords || []).find(r => r.date === today);
     const pomoCompleted = todayPomo ? todayPomo.completed : 0;
@@ -159,7 +166,7 @@ function _updateDailyQuestProgress() {
             case "todo_3":    q.progress = Math.min(completedTodos, q.target); break;
             case "pomodoro_2":q.progress = Math.min(pomoCompleted, q.target); break;
             case "high_1":    q.progress = Math.min(completedHigh, q.target); break;
-            case "daily_all": q.progress = dailyAllDone ? 1 : 0; break;
+            case "daily_all": q.progress = dailyMostlyDone ? 1 : 0; q._allDailyDone = dailyAllDone; break;
         }
         q.completed = q.progress >= q.target;
     });
@@ -167,36 +174,50 @@ function _updateDailyQuestProgress() {
 
 function _checkPerfectDay() {
     const gd = window.appData.gameData;
-    if (gd.dailyQuests.allCompleted) return; // 今天已经触发过
+    const quests = gd.dailyQuests.quests;
+    const completedCount = quests.filter(q => q.completed).length;
+    const allFourDone = quests.every(q => q.completed);
 
-    const allDone = gd.dailyQuests.quests.every(q => q.completed);
-    if (!allDone) return;
+    // 3/4 → 完美一天（仅一次）
+    if (!gd.dailyQuests.allCompleted && completedCount >= 3) {
+        gd.dailyQuests.allCompleted = true;
 
-    gd.dailyQuests.allCompleted = true;
+        const today = window.getToday();
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yStr = yesterday.getFullYear() + '-' +
+            String(yesterday.getMonth() + 1).padStart(2, '0') + '-' +
+            String(yesterday.getDate()).padStart(2, '0');
 
-    const today = window.getToday();
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yStr = yesterday.getFullYear() + '-' +
-        String(yesterday.getMonth() + 1).padStart(2, '0') + '-' +
-        String(yesterday.getDate()).padStart(2, '0');
+        if (gd.lastPerfectDate === yStr) {
+            gd.streak += 1;
+        } else {
+            gd.streak = 1;
+        }
+        gd.lastPerfectDate = today;
 
-    if (gd.lastPerfectDate === yStr) {
-        gd.streak += 1;
-    } else {
-        gd.streak = 1;
+        window.showToast("🔥 完美一天！连胜 ×" + gd.streak, 2500);
+        addXP(50);
+        _detectAchievements();
+        window.debouncedSave();
     }
-    gd.lastPerfectDate = today;
 
-    window.showToast("🔥 完美一天！连胜 ×" + gd.streak, 2500);
+    // 4/4 → 额外经验加成（仅一次）
+    if (!gd.dailyQuests.fullBonusClaimed && allFourDone) {
+        gd.dailyQuests.fullBonusClaimed = true;
+        window.showToast("🌟 全部任务完成！经验加成 +30", 2500);
+        addXP(30);
+    }
 
-    // 完美一天 XP 奖励
-    addXP(50);
-
-    // 检测连胜成就
-    _detectAchievements();
-
-    window.debouncedSave();
+    // 全部日常待办完成 → 额外奖励（仅一次）
+    if (!gd.dailyQuests.dailyAllBonusClaimed) {
+        const dailyAllQuest = quests.find(q => q.id === 'daily_all');
+        if (dailyAllQuest && dailyAllQuest._allDailyDone) {
+            gd.dailyQuests.dailyAllBonusClaimed = true;
+            window.showToast("✨ 所有日常待办全部完成！额外经验 +20", 2500);
+            addXP(20);
+        }
+    }
 }
 
 function _detectAchievements() {
@@ -345,9 +366,26 @@ function notifyGame(eventType, data) {
             xpGained = 25;
             gd.stats.totalPomodorosCompleted++;
             break;
+        case 'todo_uncompleted':
+            // 误触撤销：扣除经验，回退统计
+            if (/^try\d+$/i.test(data.content || '')) {
+                break;
+            }
+            xpGained = -10;
+            gd.stats.totalTodosCompleted = Math.max(0, gd.stats.totalTodosCompleted - 1);
+            if (data.priority === 'high') {
+                xpGained += -5;
+                gd.stats.totalHighPriorityCompleted = Math.max(0, gd.stats.totalHighPriorityCompleted - 1);
+            } else if (data.priority === 'daily') {
+                xpGained += -3;
+            }
+            break;
+        case 'daily_undone':
+            xpGained = -5;
+            break;
     }
 
-    if (xpGained > 0) {
+    if (xpGained !== 0) {
         addXP(xpGained);
     }
 
@@ -355,11 +393,9 @@ function notifyGame(eventType, data) {
     _checkPerfectDay();
     _detectAchievements();
 
-    // 更新 UI（可能因为 daily quest 变化而无需 XP 变化也要刷新）
-    if (xpGained === 0) {
-        renderGamePanel();
-        renderGameHeaderBadge();
-    }
+    // 统一在所有数据更新后渲染，避免面板显示滞后
+    renderGamePanel();
+    renderGameHeaderBadge();
 }
 
 // ========================================
@@ -379,6 +415,7 @@ function renderGamePanel() {
     const panel = document.getElementById('gamePanel');
     if (!panel || panel.style.display === 'none') return;
 
+    _updateDailyQuestProgress();
     renderLevelSection();
     renderQuestsSection();
     renderStreakSection();
@@ -420,12 +457,13 @@ function renderQuestsSection() {
         const icon = def ? def.icon : '❓';
         const name = def ? def.name : q.id;
         const doneClass = q.completed ? 'completed' : '';
+        const allDoneClass = (q.id === 'daily_all' && q._allDailyDone) ? 'all-daily-done' : '';
         return `
-            <div class="game-quest-item ${doneClass}">
+            <div class="game-quest-item ${doneClass} ${allDoneClass}">
                 <span class="game-quest-icon">${icon}</span>
                 <span class="game-quest-name">${name}</span>
                 <span class="game-quest-progress">${q.progress}/${q.target}</span>
-                ${q.completed ? '<span class="game-quest-check">✅</span>' : ''}
+                ${q._allDailyDone ? '<span class="game-quest-check">✨</span>' : (q.completed ? '<span class="game-quest-check">✅</span>' : '')}
             </div>
         `;
     }).join('');

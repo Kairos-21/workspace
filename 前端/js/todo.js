@@ -975,6 +975,11 @@ function toggleTodo(id) {
             if (todo.priority === 'daily') {
                 window.notifyGame('daily_done', { todoId: todo.id });
             }
+        } else if (!todo.completed && window.notifyGame) {
+            window.notifyGame('todo_uncompleted', { priority: todo.priority, todoId: todo.id, content: todo.content });
+            if (todo.priority === 'daily') {
+                window.notifyGame('daily_undone', { todoId: todo.id });
+            }
         }
         window.debouncedSave();
         renderTodoList();
