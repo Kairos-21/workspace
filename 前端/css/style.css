@@ -311,6 +311,12 @@ input, textarea, select, [contenteditable="true"] {
     opacity: 0.6;
 }
 
+.todo-item.selected {
+    outline: 2px solid #4A90D9;
+    outline-offset: -2px;
+    background: rgba(74, 144, 217, 0.06);
+}
+
 .todo-item.completed .todo-content {
     text-decoration: line-through;
 }

@@ -187,6 +187,56 @@ function initTodoModule() {
     
     // 渲染列表
     renderTodoList();
+
+    // 快捷键调序：↑/↓ 切换选中项，Ctrl+↑/↓ 移动选中项
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const sel = todoListEl.querySelector('.todo-item.selected');
+            if (sel) { sel.classList.remove('selected'); }
+            return;
+        }
+        if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+
+        const sel = todoListEl.querySelector('.todo-item.selected');
+        const items = [...todoListEl.querySelectorAll('.todo-item')];
+
+        // 无选中项时，方向键选中第一项
+        if (!sel) {
+            if (items.length > 0) items[0].classList.add('selected');
+            return;
+        }
+
+        const idx = items.indexOf(sel);
+
+        if (!e.ctrlKey) {
+            // 纯方向键：切换选中项
+            e.preventDefault();
+            sel.classList.remove('selected');
+            let nextIdx;
+            if (e.key === 'ArrowUp') {
+                nextIdx = idx > 0 ? idx - 1 : items.length - 1;
+            } else {
+                nextIdx = idx < items.length - 1 ? idx + 1 : 0;
+            }
+            items[nextIdx].classList.add('selected');
+            return;
+        }
+
+        // Ctrl+方向键：移动选中项
+        e.preventDefault();
+        const selId = sel.dataset.id;
+
+        if (e.key === 'ArrowUp' && idx > 0) {
+            sel.parentNode.insertBefore(sel, items[idx - 1]);
+            saveTodoOrder();
+        } else if (e.key === 'ArrowDown' && idx < items.length - 1) {
+            sel.parentNode.insertBefore(items[idx + 1], sel);
+            saveTodoOrder();
+        }
+
+        const newSel = todoListEl.querySelector(`.todo-item[data-id="${selId}"]`);
+        if (newSel) newSel.classList.add('selected');
+    });
 }
 
 /**
@@ -425,6 +475,22 @@ function bindTodoItemEvents(item, id) {
             return;
         }
         toggleTodo(id);
+    };
+
+    // 单击选中（供快捷键调序）
+    item.onclick = (e) => {
+        if (e.target.closest('.todo-checkbox') ||
+            e.target.closest('.todo-actions') ||
+            e.target.closest('.subtask-item') ||
+            e.target.closest('.add-subtask-area')) {
+            return;
+        }
+        todoListEl.querySelectorAll('.todo-item.selected').forEach(el => {
+            el.classList.remove('selected');
+        });
+        if (!item.classList.contains('selected')) {
+            item.classList.add('selected');
+        }
     };
 }
 
