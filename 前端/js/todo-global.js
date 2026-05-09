@@ -43,8 +43,10 @@ function collectAllTodos() {
     const all = [];
     const continuousMap = {}; // continuousId -> { todo, date }，只保留最新日期
 
-    // 按日期排序，确保后面的日期覆盖前面的
-    const sortedDates = Object.keys(todosByDate).sort();
+    const today = window.getToday();
+
+    // 按日期排序，确保后面的日期覆盖前面的；排除未来日期
+    const sortedDates = Object.keys(todosByDate).sort().filter(date => date <= today);
 
     sortedDates.forEach(date => {
         const todos = todosByDate[date] || [];
