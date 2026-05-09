@@ -407,13 +407,24 @@ function bindTodoItemEvents(item, id) {
     const copyBtn = item.querySelector('.todo-action-btn.copy');
     const editBtn = item.querySelector('.todo-action-btn.edit');
     const deleteBtn = item.querySelector('.todo-action-btn.delete');
-    
+
     copyBtn.onclick = () => showCopyTodoModal(id);
     editBtn.onclick = () => showEditTodoModal(id);
     deleteBtn.onclick = () => {
         window.showConfirm('确定要删除这个待办事项吗？', () => {
             deleteTodo(id);
         });
+    };
+
+    // 双击完成待办（排除子任务和操作按钮区域）
+    item.ondblclick = (e) => {
+        if (e.target.closest('.subtask-item') ||
+            e.target.closest('.add-subtask-area') ||
+            e.target.closest('.todo-checkbox') ||
+            e.target.closest('.todo-actions')) {
+            return;
+        }
+        toggleTodo(id);
     };
 }
 
