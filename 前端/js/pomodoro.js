@@ -45,6 +45,7 @@ let pomodoroStatusEl = null;
 let pomodoroStartBtnEl = null;
 let pomodoroResetBtnEl = null;
 let pomodoroSkipBtnEl = null;
+let pomodoroBackfillBtnEl = null;
 let pomodoroCircleEl = null;
 let progressRingEl = null;
 let currentCountEl = null;
@@ -74,6 +75,7 @@ function initPomodoroModule() {
     pomodoroStartBtnEl = document.getElementById('pomodoroStartBtn');
     pomodoroResetBtnEl = document.getElementById('pomodoroResetBtn');
     pomodoroSkipBtnEl = document.getElementById('pomodoroSkipBtn');
+    pomodoroBackfillBtnEl = document.getElementById('pomodoroBackfillBtn');
     pomodoroCircleEl = document.getElementById('pomodoroCircle');
     progressRingEl = document.getElementById('progressRing');
     currentCountEl = document.getElementById('currentCount');
@@ -103,6 +105,7 @@ function initPomodoroModule() {
     pomodoroStartBtnEl.onclick = togglePomodoro;
     pomodoroResetBtnEl.onclick = resetPomodoro;
     pomodoroSkipBtnEl.onclick = skipBreak;
+    pomodoroBackfillBtnEl.onclick = backfillPomodoro;
     pomodoroCircleEl.onclick = togglePomodoro;
     pomodoroSettingsBtnEl.onclick = toggleSettingsPanel;
     
@@ -796,6 +799,40 @@ function skipBreak() {
     savePomodoroState();
     updatePomodoroDisplay();
     timer = setInterval(tick, 100);
+}
+
+/**
+ * 时间补录：暂停后忘记继续时，将已实际工作的时间从剩余时间中扣除
+ */
+function backfillPomodoro() {
+    const remainingMin = Math.ceil(currentTime / 60);
+    const input = prompt(`当前剩余 ${remainingMin} 分钟，请输入已实际工作的分钟数：`, '');
+    if (!input) return;
+    const workedMin = parseInt(input);
+    if (isNaN(workedMin) || workedMin <= 0) {
+        window.showToast('请输入有效的分钟数', 2000);
+        return;
+    }
+    const workedSec = workedMin * 60;
+    currentTime = Math.max(0, currentTime - workedSec);
+
+    if (currentTime <= 0) {
+        // 时间已耗尽，切回工作状态后完成
+        currentTime = 0;
+        pomodoroState = PomodoroState.WORKING;
+        window.showToast(`已扣除 ${workedMin} 分钟，番茄钟完成`, 2000);
+        completePomodoro();
+    } else {
+        // 保存新的剩余时间
+        if (pomodoroState === PomodoroState.PAUSED) {
+            endTime = null;
+        } else {
+            endTime = Date.now() + (currentTime * 1000);
+        }
+        savePomodoroState();
+        updatePomodoroDisplay();
+        window.showToast(`已扣除 ${workedMin} 分钟，剩余 ${Math.ceil(currentTime / 60)} 分钟`, 2000);
+    }
 }
 
 /**
