@@ -228,10 +228,9 @@ function initPomodoroModule() {
     // 尝试恢复之前的番茄钟状态
     restorePomodoroState();
 
-    // 离开页面时自动暂停，避免回来时计时器已过期
-    // visibilitychange: 切标签页时触发
-    // pagehide: 关闭标签页/浏览器时触发（比 beforeunload 更可靠）
-    function autoPauseTimer() {
+    // 关闭页面时自动暂停，下次冷启动时恢复为暂停状态
+    // pagehide: 关闭标签页/浏览器时触发，比 beforeunload 更可靠
+    window.addEventListener('pagehide', () => {
         if (pomodoroState === PomodoroState.WORKING || pomodoroState === PomodoroState.BREAK) {
             if (timer) { clearInterval(timer); timer = null; }
             endTime = null;
@@ -240,9 +239,7 @@ function initPomodoroModule() {
             savePomodoroState();
             updatePomodoroDisplay();
         }
-    }
-    document.addEventListener('visibilitychange', () => { if (document.hidden) autoPauseTimer(); });
-    window.addEventListener('pagehide', autoPauseTimer);
+    });
 
     // 初始化显示
     updatePomodoroDisplay();
