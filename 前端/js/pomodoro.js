@@ -227,7 +227,23 @@ function initPomodoroModule() {
     
     // 尝试恢复之前的番茄钟状态
     restorePomodoroState();
-    
+
+    // 离开页面时自动暂停，避免回来时计时器已过期
+    // visibilitychange: 切标签页时触发
+    // pagehide: 关闭标签页/浏览器时触发（比 beforeunload 更可靠）
+    function autoPauseTimer() {
+        if (pomodoroState === PomodoroState.WORKING || pomodoroState === PomodoroState.BREAK) {
+            if (timer) { clearInterval(timer); timer = null; }
+            endTime = null;
+            pomodoroState = PomodoroState.PAUSED;
+            pomodoroStartBtnEl.textContent = '▶ 继续';
+            savePomodoroState();
+            updatePomodoroDisplay();
+        }
+    }
+    document.addEventListener('visibilitychange', () => { if (document.hidden) autoPauseTimer(); });
+    window.addEventListener('pagehide', autoPauseTimer);
+
     // 初始化显示
     updatePomodoroDisplay();
 }
@@ -640,21 +656,28 @@ function toggleSettingsPanel() {
 /**
  * 计时器滴答函数 - 使用结束时间戳计算剩余时间
  */
+let _tickCounter = 0;
 function tick() {
     if (endTime === null) return;
-    
+
     const now = Date.now();
     const remaining = Math.ceil((endTime - now) / 1000);
-    
+
     if (remaining <= 0) {
         currentTime = 0;
         updatePomodoroDisplay();
         completePomodoro();
         return;
     }
-    
+
     currentTime = remaining;
     updatePomodoroDisplay();
+
+    // 每5秒保存一次计时进度，避免关闭页面时丢失已走过的剩余时间
+    _tickCounter++;
+    if (_tickCounter % 50 === 0) {  // 50 * 100ms = 5秒
+        savePomodoroState();
+    }
 }
 
 /**
@@ -1062,21 +1085,26 @@ function savePomodoroState() {
 function restorePomodoroState() {
     const session = window.appData.pomodoroSession;
     if (!session) return;
-    
+
+    // 通过 sessionStorage 判断是冷启动还是页面刷新
+    // sessionStorage 在标签页关闭后清除，刷新页面则保留
+    const isColdStart = !sessionStorage.getItem('_pomodoro_active');
+    sessionStorage.setItem('_pomodoro_active', '1');
+
     // 恢复状态
     pomodoroState = session.state;
     completedPomodoros = session.completedPomodoros || 0;
     totalTime = session.totalTime;
-    
+
     // 更新计数显示
     currentCountEl.textContent = completedPomodoros;
-    
+
     // 检查是否有未完成的计时
-    if (session.endTime && session.endTime > Date.now()) {
-        // 有未完成的计时，继续
+    if (session.endTime && session.endTime > Date.now() && !isColdStart) {
+        // 页面刷新且计时未过期：正常恢复计时
         endTime = session.endTime;
         currentTime = Math.ceil((endTime - Date.now()) / 1000);
-        
+
         // 恢复状态显示
         if (session.state === PomodoroState.WORKING) {
             pomodoroStatusEl.textContent = '工作中';
@@ -1087,21 +1115,38 @@ function restorePomodoroState() {
             pomodoroCircleEl.classList.remove('work');
             pomodoroCircleEl.classList.add('break');
         }
-        
+
         pomodoroStartBtnEl.textContent = '⏸ 暂停';
-        
+
         // 继续计时
         timer = setInterval(tick, 100);
-        
-        console.log('🍅 恢复番茄钟计时');
-    } else if (session.endTime && session.endTime <= Date.now()) {
-        // 计时已经结束了
-        if (session.state === PomodoroState.WORKING || session.state === PomodoroState.BREAK) {
-            console.log('🔄 恢复时检测到计时已结束，调用 completePomodoro()');
-            completePomodoro();
-            // completePomodoro() 已经会保存新状态，不需要再 reset
+
+        console.log('🍅 恢复番茄钟计时（页面刷新）');
+    } else if (session.endTime && (session.endTime <= Date.now() || isColdStart)
+        && (session.state === PomodoroState.WORKING || session.state === PomodoroState.BREAK)) {
+        // 冷启动或计时已过期：转为暂停状态，不让其自动完成
+        // 冷启动时用定期保存的 currentTime，过期时用 endTime 倒算（至少为0）
+        if (isColdStart && session.endTime > Date.now()) {
+            currentTime = session.currentTime || Math.ceil((session.endTime - Date.now()) / 1000);
         } else {
-            resetPomodoroSession();
+            currentTime = Math.max(0, Math.ceil((session.endTime - Date.now()) / 1000));
+        }
+        pomodoroState = PomodoroState.PAUSED;
+        endTime = null;
+        pomodoroStartBtnEl.textContent = '▶ 继续';
+        const workSeconds = window.appData.pomodoroSettings.workDuration * 60;
+        if (session.totalTime === window.appData.pomodoroSettings.longBreak * 60) {
+            pomodoroStatusEl.textContent = '长休息';
+            pomodoroCircleEl.classList.remove('work');
+            pomodoroCircleEl.classList.add('break');
+        } else if (session.totalTime !== workSeconds) {
+            pomodoroStatusEl.textContent = '短休息';
+            pomodoroCircleEl.classList.remove('work');
+            pomodoroCircleEl.classList.add('break');
+        } else {
+            pomodoroStatusEl.textContent = '工作中';
+            pomodoroCircleEl.classList.add('work');
+            pomodoroCircleEl.classList.remove('break');
         }
     } else if (session.state === PomodoroState.PAUSED) {
         // 暂停状态
