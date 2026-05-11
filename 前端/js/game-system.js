@@ -130,7 +130,7 @@ function _refreshDailyQuests() {
     const dailyIncomplete = dailyTodos.filter(t => !t.completed).length;
     const dailyAllDone = dailyTodos.length > 0 && dailyIncomplete === 0;
     // 至多1项日常待办未完成即算通过
-    const dailyMostlyDone = dailyTodos.length > 0 && dailyIncomplete <= 1;
+    const dailyMostlyDone = dailyTodos.length > 0 && dailyIncomplete <= 1 && dailyIncomplete < dailyTodos.length;
 
     const todayPomo = (window.appData.pomodoroRecords || []).find(r => r.date === today);
     const pomoCompleted = todayPomo ? todayPomo.completed : 0;
@@ -156,7 +156,7 @@ function _updateDailyQuestProgress() {
     const dailyTodos = todosToday.filter(t => t.priority === 'daily');
     const dailyIncomplete = dailyTodos.filter(t => !t.completed).length;
     const dailyAllDone = dailyTodos.length > 0 && dailyIncomplete === 0;
-    const dailyMostlyDone = dailyTodos.length > 0 && dailyIncomplete <= 1;
+    const dailyMostlyDone = dailyTodos.length > 0 && dailyIncomplete <= 1 && dailyIncomplete < dailyTodos.length;
 
     const todayPomo = (window.appData.pomodoroRecords || []).find(r => r.date === today);
     const pomoCompleted = todayPomo ? todayPomo.completed : 0;
@@ -175,11 +175,10 @@ function _updateDailyQuestProgress() {
 function _checkPerfectDay() {
     const gd = window.appData.gameData;
     const quests = gd.dailyQuests.quests;
-    const completedCount = quests.filter(q => q.completed).length;
     const allFourDone = quests.every(q => q.completed);
 
-    // 3/4 → 完美一天（仅一次）
-    if (!gd.dailyQuests.allCompleted && completedCount >= 3) {
+    // 4/4 全部完成 → 完美一天 + 连胜（仅一次）
+    if (!gd.dailyQuests.allCompleted && allFourDone) {
         gd.dailyQuests.allCompleted = true;
 
         const today = window.getToday();
@@ -197,16 +196,9 @@ function _checkPerfectDay() {
         gd.lastPerfectDate = today;
 
         window.showToast("🔥 完美一天！连胜 ×" + gd.streak, 2500);
-        addXP(50);
+        addXP(80);
         _detectAchievements();
         window.debouncedSave();
-    }
-
-    // 4/4 → 额外经验加成（仅一次）
-    if (!gd.dailyQuests.fullBonusClaimed && allFourDone) {
-        gd.dailyQuests.fullBonusClaimed = true;
-        window.showToast("🌟 全部任务完成！经验加成 +30", 2500);
-        addXP(30);
     }
 
     // 全部日常待办完成 → 额外奖励（仅一次）
