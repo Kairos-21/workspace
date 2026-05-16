@@ -1269,6 +1269,13 @@ function toggleSubtask(todoId, subtaskId) {
             todo.updatedAt = new Date().toISOString();
             window.debouncedSave();
             renderTodoList();
+
+            // 日常待办的子任务变更时实时刷新今日任务面板
+            if (todo.priority === 'daily' && window._updateDailyQuestProgress) {
+                window._updateDailyQuestProgress();
+                window._checkPerfectDay();
+                window.renderGamePanel();
+            }
         }
     }
 }

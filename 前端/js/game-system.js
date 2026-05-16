@@ -127,10 +127,19 @@ function _refreshDailyQuests() {
     const completedTodos = todosToday.filter(t => t.completed).length;
     const completedHigh = todosToday.filter(t => t.priority === 'high' && t.completed).length;
     const dailyTodos = todosToday.filter(t => t.priority === 'daily');
-    const dailyIncomplete = dailyTodos.filter(t => !t.completed).length;
-    const dailyAllDone = dailyTodos.length > 0 && dailyIncomplete === 0;
-    // 至多1项日常待办未完成即算通过
-    const dailyMostlyDone = dailyTodos.length > 0 && dailyIncomplete <= 1 && dailyIncomplete < dailyTodos.length;
+    // 收集日常待办的考核项：有子任务则以子任务为准，无子任务则以自身为准
+    let dailyItems = [];
+    dailyTodos.forEach(t => {
+        if (t.subtasks && t.subtasks.length > 0) {
+            dailyItems = dailyItems.concat(t.subtasks);
+        } else {
+            dailyItems.push(t);
+        }
+    });
+    const dailyIncomplete = dailyItems.filter(item => !item.completed).length;
+    const dailyAllDone = dailyItems.length > 0 && dailyIncomplete === 0;
+    // 至多1项子任务未完成即算通过（至少完成1项）
+    const dailyMostlyDone = dailyItems.length > 0 && dailyIncomplete <= 1 && dailyIncomplete < dailyItems.length;
 
     const todayPomo = (window.appData.pomodoroRecords || []).find(r => r.date === today);
     const pomoCompleted = todayPomo ? todayPomo.completed : 0;
@@ -154,9 +163,19 @@ function _updateDailyQuestProgress() {
     const completedTodos = todosToday.filter(t => t.completed).length;
     const completedHigh = todosToday.filter(t => t.priority === 'high' && t.completed).length;
     const dailyTodos = todosToday.filter(t => t.priority === 'daily');
-    const dailyIncomplete = dailyTodos.filter(t => !t.completed).length;
-    const dailyAllDone = dailyTodos.length > 0 && dailyIncomplete === 0;
-    const dailyMostlyDone = dailyTodos.length > 0 && dailyIncomplete <= 1 && dailyIncomplete < dailyTodos.length;
+    // 收集日常待办的考核项：有子任务则以子任务为准，无子任务则以自身为准
+    let dailyItems = [];
+    dailyTodos.forEach(t => {
+        if (t.subtasks && t.subtasks.length > 0) {
+            dailyItems = dailyItems.concat(t.subtasks);
+        } else {
+            dailyItems.push(t);
+        }
+    });
+    const dailyIncomplete = dailyItems.filter(item => !item.completed).length;
+    const dailyAllDone = dailyItems.length > 0 && dailyIncomplete === 0;
+    // 至多1项子任务未完成即算通过（至少完成1项）
+    const dailyMostlyDone = dailyItems.length > 0 && dailyIncomplete <= 1 && dailyIncomplete < dailyItems.length;
 
     const todayPomo = (window.appData.pomodoroRecords || []).find(r => r.date === today);
     const pomoCompleted = todayPomo ? todayPomo.completed : 0;
@@ -332,7 +351,7 @@ function notifyGame(eventType, data) {
     let xpGained = 0;
 
     // 事件去重
-    const dedupKey = data.todoId || data.subtaskId || '';
+    const dedupKey = data.subtaskId || data.todoId || '';
     if (_isDuplicate(eventType, dedupKey)) return;
 
     switch (eventType) {
@@ -564,3 +583,5 @@ window.notifyGame = notifyGame;
 window.addXP = addXP;
 window.renderGamePanel = renderGamePanel;
 window.renderGameHeaderBadge = renderGameHeaderBadge;
+window._updateDailyQuestProgress = _updateDailyQuestProgress;
+window._checkPerfectDay = _checkPerfectDay;
