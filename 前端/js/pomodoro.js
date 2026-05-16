@@ -725,6 +725,10 @@ function startPomodoro() {
         // 从暂停恢复，根据 totalTime 判断原来是工作还是休息
         const workSeconds = settings.workDuration * 60;
         pomodoroState = totalTime === workSeconds ? PomodoroState.WORKING : PomodoroState.BREAK;
+        // 异常保护：剩余时间为0时重置为完整时长，避免立即过期跳到下一阶段
+        if (currentTime <= 0) {
+            currentTime = totalTime;
+        }
     }
     
     pomodoroStartBtnEl.textContent = '⏸ 暂停';
@@ -1128,6 +1132,7 @@ function restorePomodoroState() {
         } else {
             currentTime = Math.max(0, Math.ceil((session.endTime - Date.now()) / 1000));
         }
+        if (currentTime <= 0) { currentTime = session.totalTime; }
         pomodoroState = PomodoroState.PAUSED;
         endTime = null;
         pomodoroStartBtnEl.textContent = '▶ 继续';
@@ -1148,26 +1153,26 @@ function restorePomodoroState() {
     } else if (session.state === PomodoroState.PAUSED) {
         // 暂停状态
         currentTime = session.currentTime;
+        // 异常保护：剩余时间为0时重置为完整时长
+        if (currentTime <= 0) { currentTime = session.totalTime; }
         endTime = null;
 
         const workSeconds = window.appData.pomodoroSettings.workDuration * 60;
         if (session.totalTime === window.appData.pomodoroSettings.longBreak * 60) {
-            pomodoroState = PomodoroState.BREAK;
             pomodoroStatusEl.textContent = '长休息';
             pomodoroCircleEl.classList.remove('work');
             pomodoroCircleEl.classList.add('break');
         } else if (session.totalTime !== workSeconds) {
-            pomodoroState = PomodoroState.BREAK;
             pomodoroStatusEl.textContent = '短休息';
             pomodoroCircleEl.classList.remove('work');
             pomodoroCircleEl.classList.add('break');
         } else {
-            pomodoroState = PomodoroState.WORKING;
-            pomodoroStatusEl.textContent = '工作';
+            pomodoroStatusEl.textContent = '工作中';
             pomodoroCircleEl.classList.add('work');
             pomodoroCircleEl.classList.remove('break');
         }
-
+        // 保持 PAUSED 状态，以便点击按钮直接进入 startPomodoro
+        pomodoroState = PomodoroState.PAUSED;
         pomodoroStartBtnEl.textContent = '▶ 继续';
     }
 }
