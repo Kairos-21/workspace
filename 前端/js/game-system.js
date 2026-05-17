@@ -17,6 +17,8 @@ const ACHIEVEMENT_DEFS = [
     { id: "pomo_100",   name: "专注学徒", desc: "累计完成 100 个番茄钟", icon: "⏱️", type: "total",  threshold: 100 },
     { id: "pomo_500",   name: "专注大师", desc: "累计完成 500 个番茄钟", icon: "⌛", type: "total",  threshold: 500 },
     { id: "pomo_1000",  name: "专注传说", desc: "累计完成 1000 个番茄钟",icon: "🏆", type: "total",  threshold: 1000 },
+    { id: "skip_10",   name: "工作狂",   desc: "累计跳过 10 次休息",   icon: "⚡", type: "total",  threshold: 10 },
+    { id: "skip_50",   name: "永动机",   desc: "累计跳过 50 次休息",   icon: "🔋", type: "total",  threshold: 50 },
     { id: "streak_7",   name: "一周之星", desc: "连续 7 天完美一天",   icon: "🌟", type: "streak", threshold: 7 },
     { id: "streak_30",  name: "月度冠军", desc: "连续 30 天完美一天",  icon: "🌙", type: "streak", threshold: 30 },
     { id: "streak_100", name: "传奇连胜", desc: "连续 100 天完美一天", icon: "💎", type: "streak", threshold: 100 },
@@ -83,14 +85,18 @@ function _ensureGameData() {
             stats: {
                 totalTodosCompleted: 0,
                 totalPomodorosCompleted: 0,
-                totalHighPriorityCompleted: 0
+                totalHighPriorityCompleted: 0,
+                totalBreaksSkipped: 0,
+                maxConsecutiveWorkMinutes: 0
             }
         };
     }
     const gd = window.appData.gameData;
     if (!gd.stats) {
-        gd.stats = { totalTodosCompleted: 0, totalPomodorosCompleted: 0, totalHighPriorityCompleted: 0 };
+        gd.stats = { totalTodosCompleted: 0, totalPomodorosCompleted: 0, totalHighPriorityCompleted: 0, totalBreaksSkipped: 0, maxConsecutiveWorkMinutes: 0 };
     }
+    if (gd.stats.totalBreaksSkipped === undefined) gd.stats.totalBreaksSkipped = 0;
+    if (gd.stats.maxConsecutiveWorkMinutes === undefined) gd.stats.maxConsecutiveWorkMinutes = 0;
     if (!gd.achievements) gd.achievements = [];
 }
 
@@ -248,6 +254,7 @@ function _detectAchievements() {
             case "total":
                 if (def.id.startsWith("todo_") && gd.stats.totalTodosCompleted >= def.threshold) unlocked = true;
                 if (def.id.startsWith("pomo_") && gd.stats.totalPomodorosCompleted >= def.threshold) unlocked = true;
+                if (def.id.startsWith("skip_") && gd.stats.totalBreaksSkipped >= def.threshold) unlocked = true;
                 break;
             case "streak":
                 if (gd.streak >= def.threshold) unlocked = true;
@@ -407,6 +414,10 @@ function notifyGame(eventType, data) {
             }
             xpGained = -5;
             break;
+        case 'break_skipped':
+            xpGained = 15;
+            gd.stats.totalBreaksSkipped++;
+            break;
     }
 
     if (xpGained !== 0) {
@@ -467,6 +478,7 @@ function renderLevelSection() {
             <div class="game-stat-item">📝 ${gd.stats.totalTodosCompleted} 待办</div>
             <div class="game-stat-item">🍅 ${gd.stats.totalPomodorosCompleted} 番茄</div>
             <div class="game-stat-item">🔥 ${gd.stats.totalHighPriorityCompleted} 高优</div>
+            <div class="game-stat-item">⚡ ${gd.stats.totalBreaksSkipped || 0} 跳过</div>
         `;
     }
 }

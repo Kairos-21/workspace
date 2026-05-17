@@ -17,6 +17,8 @@ let totalTime = 25 * 60;
 let endTime = null; // 番茄钟结束的时间戳
 let timer = null;
 let completedPomodoros = 0;
+let currentConsecutiveWorkMinutes = 0;
+let todayMaxConsecutiveWork = 0;
 
 // 音频上下文
 let audioContext = null;
@@ -221,6 +223,7 @@ function initPomodoroModule() {
     const todayRecord = (window.appData.pomodoroRecords || []).find(r => r.date === today);
     if (todayRecord) {
         completedPomodoros = todayRecord.completed;
+        todayMaxConsecutiveWork = todayRecord.maxConsecutiveWork || 0;
         currentCountEl.textContent = completedPomodoros;
         console.log('📊 从今日记录恢复完成数:', completedPomodoros);
     }
@@ -809,6 +812,7 @@ function skipBreak() {
     }
     endTime = null;
 
+    recordBreakSkipped();
     window.showToast('⏩ 跳过休息，开始下一个番茄钟');
 
     // 切换到工作
@@ -826,6 +830,64 @@ function skipBreak() {
     savePomodoroState();
     updatePomodoroDisplay();
     timer = setInterval(tick, 100);
+}
+
+/**
+ * 记录跳过休息
+ */
+function recordBreakSkipped() {
+    const today = window.getToday();
+    let records = window.appData.pomodoroRecords || [];
+
+    const todayRecord = records.find(r => r.date === today);
+    if (todayRecord) {
+        if (todayRecord.skipped === undefined) todayRecord.skipped = 0;
+        if (todayRecord.maxConsecutiveWork === undefined) todayRecord.maxConsecutiveWork = 0;
+        todayRecord.skipped++;
+    } else {
+        records.push({
+            date: today,
+            completed: 0,
+            skipped: 1,
+            maxConsecutiveWork: 0
+        });
+    }
+
+    // 30天清理
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    records = records.filter(r => new Date(r.date) >= thirtyDaysAgo);
+    window.appData.pomodoroRecords = records;
+
+    // 通知游戏系统
+    if (window.notifyGame) {
+        window.notifyGame('break_skipped', {});
+    }
+
+    window.debouncedSave();
+}
+
+/**
+ * 更新今日最长连续工作时间
+ */
+function updateTodayMaxConsecutiveWork() {
+    const today = window.getToday();
+    const records = window.appData.pomodoroRecords || [];
+    const todayRecord = records.find(r => r.date === today);
+    if (todayRecord) {
+        if (todayRecord.maxConsecutiveWork === undefined) todayRecord.maxConsecutiveWork = 0;
+        todayRecord.maxConsecutiveWork = Math.max(todayRecord.maxConsecutiveWork, todayMaxConsecutiveWork);
+        window.debouncedSave();
+    }
+
+    // 同步更新游戏系统历史峰值
+    if (window.appData.gameData && window.appData.gameData.stats) {
+        const gd = window.appData.gameData;
+        if (gd.stats.maxConsecutiveWorkMinutes === undefined) gd.stats.maxConsecutiveWorkMinutes = 0;
+        if (todayMaxConsecutiveWork > gd.stats.maxConsecutiveWorkMinutes) {
+            gd.stats.maxConsecutiveWorkMinutes = todayMaxConsecutiveWork;
+        }
+    }
 }
 
 /**
@@ -887,6 +949,14 @@ function completePomodoro() {
         
         // 记录完成
         recordCompletedPomodoro();
+
+        // 追踪连续工作时间
+        const workDuration = settings.workDuration;
+        currentConsecutiveWorkMinutes += workDuration;
+        if (currentConsecutiveWorkMinutes > todayMaxConsecutiveWork) {
+            todayMaxConsecutiveWork = currentConsecutiveWorkMinutes;
+        }
+        updateTodayMaxConsecutiveWork();
         
         // 检查是否完成目标
         if (completedPomodoros >= settings.targetCount) {
@@ -922,6 +992,7 @@ function completePomodoro() {
             savePomodoroState();
             updatePomodoroDisplay();
             timer = setInterval(tick, 100);
+            recordBreakSkipped();
             window.showToast('⏩ 跳过休息，开始下一个番茄钟');
         } else {
             // 开始休息
@@ -939,9 +1010,11 @@ function completePomodoro() {
             timer = setInterval(tick, 100);
         }
     } else {
-        // 休息完成
+        // 休息完成 — 真正休息了，重置连续工作追踪
         window.showToast('☕ 休息结束！准备开始下一个番茄钟');
-        
+
+        currentConsecutiveWorkMinutes = 0;
+
         // 播放提示音提醒休息结束
         if (settings.soundEnabled) {
             playNotificationSound();
@@ -975,10 +1048,14 @@ function recordCompletedPomodoro() {
     const todayRecord = records.find(r => r.date === today);
     if (todayRecord) {
         todayRecord.completed++;
+        if (todayRecord.skipped === undefined) todayRecord.skipped = 0;
+        if (todayRecord.maxConsecutiveWork === undefined) todayRecord.maxConsecutiveWork = 0;
     } else {
         records.push({
             date: today,
-            completed: 1
+            completed: 1,
+            skipped: 0,
+            maxConsecutiveWork: 0
         });
     }
     
@@ -1077,7 +1154,8 @@ function savePomodoroState() {
         currentTime: currentTime,
         totalTime: totalTime,
         endTime: endTime,
-        completedPomodoros: completedPomodoros
+        completedPomodoros: completedPomodoros,
+        currentConsecutiveWorkMinutes: currentConsecutiveWorkMinutes
     };
     
     window.debouncedSave();
@@ -1098,6 +1176,7 @@ function restorePomodoroState() {
     // 恢复状态
     pomodoroState = session.state;
     completedPomodoros = session.completedPomodoros || 0;
+    currentConsecutiveWorkMinutes = session.currentConsecutiveWorkMinutes || 0;
     totalTime = session.totalTime;
 
     // 更新计数显示

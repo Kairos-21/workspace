@@ -1887,7 +1887,7 @@ body {
 /* 统计卡片网格 */
 .wr-stats-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 12px;
 }
 
@@ -1903,6 +1903,8 @@ body {
 .wr-stat-card.todo { border-left-color: #27AE60; }
 .wr-stat-card.create { border-left-color: #F39C12; }
 .wr-stat-card.schedule { border-left-color: #9B59B6; }
+.wr-stat-card.break-skip { border-left-color: #3498DB; }
+.wr-stat-card.focus { border-left-color: #E67E22; }
 
 .wr-stat-num {
     font-size: 1.8rem;

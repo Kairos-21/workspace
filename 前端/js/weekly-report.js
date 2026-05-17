@@ -211,6 +211,8 @@ function generateReport(weekStart) {
         weekEnd: weekEndStr,
         pomodorosCompleted: 0,
         totalWorkMinutes: 0,
+        breaksSkipped: 0,
+        maxConsecutiveWork: 0,
         todosCompleted: 0,
         todosByPriority: { high: 0, medium: 0, low: 0, daily: 0 },
         todosCreated: 0,
@@ -230,6 +232,10 @@ function generateReport(weekStart) {
     records.forEach(r => {
         if (r.date >= weekStartStr && r.date <= weekEndStr) {
             report.pomodorosCompleted += (r.completed || 0);
+            report.breaksSkipped += (r.skipped || 0);
+            if ((r.maxConsecutiveWork || 0) > report.maxConsecutiveWork) {
+                report.maxConsecutiveWork = r.maxConsecutiveWork || 0;
+            }
         }
     });
     report.totalWorkMinutes = report.pomodorosCompleted * workMin;
@@ -360,6 +366,16 @@ function renderReport(report) {
             <div class="wr-stat-card schedule">
                 <div class="wr-stat-num">${report.schedulesCount}</div>
                 <div class="wr-stat-label">新建日程</div>
+            </div>
+            <div class="wr-stat-card break-skip">
+                <div class="wr-stat-num">${report.breaksSkipped || 0}</div>
+                <div class="wr-stat-label">跳过休息</div>
+                <div class="wr-stat-sub">+${(report.breaksSkipped || 0) * 15} XP</div>
+            </div>
+            <div class="wr-stat-card focus">
+                <div class="wr-stat-num">${report.maxConsecutiveWork || 0}</div>
+                <div class="wr-stat-label">最长连续工作</div>
+                <div class="wr-stat-sub">${report.maxConsecutiveWork || 0} 分钟</div>
             </div>
         </div>
 
