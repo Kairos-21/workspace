@@ -1270,11 +1270,12 @@ function toggleSubtask(todoId, subtaskId) {
             window.debouncedSave();
             renderTodoList();
 
-            // 日常待办的子任务变更时实时刷新今日任务面板
-            if (todo.priority === 'daily' && window._updateDailyQuestProgress) {
-                window._updateDailyQuestProgress();
-                window._checkPerfectDay();
-                window.renderGamePanel();
+            // 通知游戏系统子任务完成/取消
+            if (window.notifyGame) {
+                window.notifyGame(
+                    subtask.completed ? 'subtask_completed' : 'subtask_uncompleted',
+                    { subtaskId: subtask.id, todoId: todo.id, content: subtask.content, priority: todo.priority }
+                );
             }
         }
     }

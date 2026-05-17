@@ -394,6 +394,19 @@ function notifyGame(eventType, data) {
         case 'daily_undone':
             xpGained = -5;
             break;
+        case 'subtask_completed':
+            if (/^try\d+$/i.test(data.content || '')) {
+                window.showToast('🧪 该子任务为测试样例，不增加经验值', 2000);
+                break;
+            }
+            xpGained = 5;
+            break;
+        case 'subtask_uncompleted':
+            if (/^try\d+$/i.test(data.content || '')) {
+                break;
+            }
+            xpGained = -5;
+            break;
     }
 
     if (xpGained !== 0) {
