@@ -230,6 +230,8 @@ function initPomodoroModule() {
 
     // 关闭页面时自动暂停，下次冷启动时恢复为暂停状态
     // pagehide: 关闭标签页/浏览器时触发，比 beforeunload 更可靠
+    // 注意：pagehide 时页面即将销毁，必须用 saveData() 同步写入，
+    // 不能靠 debouncedSave() 的 setTimeout 延迟，否则数据可能丢失
     window.addEventListener('pagehide', () => {
         if (pomodoroState === PomodoroState.WORKING || pomodoroState === PomodoroState.BREAK) {
             if (timer) { clearInterval(timer); timer = null; }
@@ -237,6 +239,7 @@ function initPomodoroModule() {
             pomodoroState = PomodoroState.PAUSED;
             pomodoroStartBtnEl.textContent = '▶ 继续';
             savePomodoroState();
+            if (window.saveData) window.saveData(); // 同步写入，绕过 debounce
             updatePomodoroDisplay();
         }
     });
