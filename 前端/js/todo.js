@@ -13,6 +13,34 @@ const PRIORITY_CONFIG = {
 // 当前选中的日期
 let currentTodoDate = null;
 
+// 当前排序模式
+let currentSortMode = 'priority';
+const priorityWeight = { daily: 0, high: 1, medium: 2, low: 3 };
+
+function sortByMode(a, b) {
+    if (currentSortMode === 'time') {
+        const ta = new Date(a.createdAt).getTime();
+        const tb = new Date(b.createdAt).getTime();
+        return tb - ta;
+    }
+    if (currentSortMode === 'combined') {
+        const wa = priorityWeight[a.priority] ?? 2;
+        const wb = priorityWeight[b.priority] ?? 2;
+        if (wa !== wb) return wa - wb;
+        const ta = new Date(a.createdAt).getTime();
+        const tb = new Date(b.createdAt).getTime();
+        return tb - ta;
+    }
+    // priority mode (default)
+    if (a.completed !== b.completed) return a.completed ? 1 : -1;
+    const wa = priorityWeight[a.priority] ?? 2;
+    const wb = priorityWeight[b.priority] ?? 2;
+    if (wa !== wb) return wa - wb;
+    const oa = a.order !== undefined ? a.order : new Date(a.createdAt).getTime();
+    const ob = b.order !== undefined ? b.order : new Date(b.createdAt).getTime();
+    return oa - ob;
+}
+
 // DOM 元素引用
 let todoListEl = null;
 let todoInputEl = null;
@@ -88,6 +116,7 @@ function carryOverContinuousTodos() {
                     content: yesterdayTodo.content,
                     priority: 'daily',
                     completed: false,
+                    pinned: false,
                     subtasks: yesterdayTodo.subtasks ? yesterdayTodo.subtasks.map(st => ({
                         id: window.generateId(),
                         content: st.content,
@@ -112,6 +141,7 @@ function carryOverContinuousTodos() {
                     content: yesterdayTodo.content,
                     priority: yesterdayTodo.priority,
                     completed: yesterdayTodo.completed,
+                    pinned: false,
                     subtasks: yesterdayTodo.subtasks
                         ? yesterdayTodo.subtasks
                             .filter(st => !st.completed)
@@ -152,6 +182,21 @@ function initTodoModule() {
     todoPriorityEl = document.getElementById('todoPriority');
     addTodoBtnEl = document.getElementById('addTodoBtn');
     todoDateDisplayEl = document.getElementById('todoDateDisplay');
+
+    // 恢复排序模式
+    if (window.appData.todoSortMode) {
+        currentSortMode = window.appData.todoSortMode;
+    }
+    const sortSelect = document.getElementById('todoSortMode');
+    if (sortSelect) {
+        sortSelect.value = currentSortMode;
+        sortSelect.onchange = () => {
+            currentSortMode = sortSelect.value;
+            window.appData.todoSortMode = currentSortMode;
+            window.debouncedSave();
+            renderTodoList();
+        };
+    }
     
     // 初始化为今天
     currentTodoDate = window.getToday();
@@ -305,29 +350,32 @@ function renderTodoList() {
         return;
     }
     
-    // 排序：日常优先级在前，然后未完成的在前，最后按order排序
+    // 排序：日常 > 置顶 > 其余（按排序模式）
     const sortedTodos = [...todos].sort((a, b) => {
         // 日常优先级始终在最前面
-        if (a.priority === 'daily' && b.priority !== 'daily') {
-            return -1;
-        }
-        if (a.priority !== 'daily' && b.priority === 'daily') {
-            return 1;
-        }
-        // 都是日常优先级的话，按order排序
+        if (a.priority === 'daily' && b.priority !== 'daily') return -1;
+        if (a.priority !== 'daily' && b.priority === 'daily') return 1;
+
+        // 都是日常优先级，按 order 排序
         if (a.priority === 'daily' && b.priority === 'daily') {
-            const orderA = a.order !== undefined ? a.order : new Date(a.createdAt).getTime();
-            const orderB = b.order !== undefined ? b.order : new Date(b.createdAt).getTime();
-            return orderA - orderB;
+            const oa = a.order !== undefined ? a.order : new Date(a.createdAt).getTime();
+            const ob = b.order !== undefined ? b.order : new Date(b.createdAt).getTime();
+            return oa - ob;
         }
-        // 非日常优先级，按完成状态排序
-        if (a.completed !== b.completed) {
-            return a.completed ? 1 : -1;
+
+        // 置顶项在非日常项中最前
+        const aPinned = a.pinned || false;
+        const bPinned = b.pinned || false;
+        if (aPinned && !bPinned) return -1;
+        if (!aPinned && bPinned) return 1;
+
+        // 都是置顶项，按当前排序模式排列
+        if (aPinned && bPinned) {
+            return sortByMode(a, b);
         }
-        // 按order排序，没有order的按创建时间
-        const orderA = a.order !== undefined ? a.order : new Date(a.createdAt).getTime();
-        const orderB = b.order !== undefined ? b.order : new Date(b.createdAt).getTime();
-        return orderA - orderB;
+
+        // 其余项按排序模式
+        return sortByMode(a, b);
     });
     
     // 更新排序后的order
@@ -359,6 +407,8 @@ function renderTodoList() {
 function createTodoItemHtml(todo, number) {
     const priority = PRIORITY_CONFIG[todo.priority] || PRIORITY_CONFIG.medium;
     const completedClass = todo.completed ? 'completed' : '';
+    const pinnedClass = todo.pinned ? 'pinned' : '';
+    const pinIcon = todo.pinned ? '📌' : '📍';
     const subTasksHtml = todo.subtasks && todo.subtasks.length > 0 
         ? createSubTasksHtml(todo.subtasks, todo.id, number) 
         : '';
@@ -385,21 +435,22 @@ function createTodoItemHtml(todo, number) {
         : '';
     
     return `
-        <li class="todo-item ${completedClass}" data-id="${todo.id}" draggable="true">
+        <li class="todo-item ${completedClass} ${pinnedClass}" data-id="${todo.id}" draggable="true">
             <span class="todo-number">${number}</span>
-            <input type="checkbox" class="todo-checkbox" 
-                ${todo.completed ? 'checked' : ''} 
+            <input type="checkbox" class="todo-checkbox"
+                ${todo.completed ? 'checked' : ''}
                 onchange="toggleTodo('${todo.id}')">
             <div class="todo-content-wrapper">
                 <div class="todo-content">${continuousBadge}${escapeHtml(todo.content)}</div>
                 <div class="todo-meta">
-                    <span class="todo-priority ${todo.priority}" 
+                    <span class="todo-priority ${todo.priority}"
                         style="background-color: ${priority.color}">${priority.label}</span>
                 </div>
                 ${subTasksHtml}
                 ${addSubtaskHtml}
             </div>
             <div class="todo-actions">
+                <button class="todo-action-btn pin ${todo.pinned ? 'active' : ''}" title="${todo.pinned ? '取消置顶' : '置顶'}" onclick="togglePin('${todo.id}')">${pinIcon}</button>
                 <button class="todo-action-btn copy" title="复制到其他日期">📋</button>
                 <button class="todo-action-btn edit" title="编辑">✏️</button>
                 <button class="todo-action-btn delete" title="删除">🗑️</button>
@@ -804,12 +855,13 @@ function addTodoToDate(dateStr, content, priority = 'medium', continuous = false
     if (!window.appData.todosByDate[dateStr]) {
         window.appData.todosByDate[dateStr] = [];
     }
-    
+
     const todo = {
         id: window.generateId(),
         content: content,
         priority: priority,
         completed: false,
+        pinned: false,
         subtasks: [],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -864,6 +916,7 @@ function addTodo(content, priority = 'medium', continuous = false) {
         content: content,
         priority: priority,
         completed: false,
+        pinned: false,
         subtasks: [],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -1024,6 +1077,20 @@ function copyTodo(id, targetDate, keepSubtasks, keepStatus) {
     targetTodos.push(newTodo);
     window.debouncedSave();
     window.showToast(`已复制到 ${targetDate}`);
+}
+
+/**
+ * 切换置顶状态
+ */
+function togglePin(id) {
+    const todos = getCurrentTodos();
+    const todo = todos.find(t => t.id === id);
+    if (todo) {
+        todo.pinned = !todo.pinned;
+        todo.updatedAt = new Date().toISOString();
+        window.debouncedSave();
+        renderTodoList();
+    }
 }
 
 /**
@@ -1319,6 +1386,7 @@ window.removeTodosByContentInRange = removeTodosByContentInRange;
 window.editTodo = editTodo;
 window.deleteTodo = deleteTodo;
 window.toggleTodo = toggleTodo;
+window.togglePin = togglePin;
 window.addSubtask = addSubtask;
 window.toggleSubtask = toggleSubtask;
 window.deleteSubtask = deleteSubtask;

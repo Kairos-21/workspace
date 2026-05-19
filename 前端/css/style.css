@@ -311,6 +311,11 @@ input, textarea, select, [contenteditable="true"] {
     opacity: 0.6;
 }
 
+.todo-item.pinned {
+    border-left: 3px solid #F39C12;
+    background: rgba(243, 156, 18, 0.06);
+}
+
 .todo-item.selected {
     outline: 2px solid #4A90D9;
     outline-offset: -2px;
@@ -392,6 +397,30 @@ input, textarea, select, [contenteditable="true"] {
 
 .todo-action-btn.delete:hover {
     color: var(--priority-high);
+}
+
+.todo-action-btn.pin {
+    font-size: 0.8rem;
+}
+
+.todo-action-btn.pin.active {
+    color: #F39C12;
+}
+
+/* 排序选择器 */
+.sort-select {
+    padding: 2px 6px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-size: 0.75rem;
+    cursor: pointer;
+    outline: none;
+}
+
+.sort-select:focus {
+    border-color: var(--accent-color);
 }
 
 /* 子任务样式 */

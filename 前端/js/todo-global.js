@@ -121,6 +121,12 @@ function sortGlobalTodos(todos) {
     const today = window.getToday();
 
     return [...todos].sort((a, b) => {
+        // 置顶项优先
+        const aPinned = a.pinned || false;
+        const bPinned = b.pinned || false;
+        if (aPinned && !bPinned) return -1;
+        if (!aPinned && bPinned) return 1;
+
         // 未完成在前
         if (a.completed !== b.completed) return a.completed ? 1 : -1;
         // 日期近在前（今天排最前）
@@ -250,6 +256,7 @@ function createGlobalTodoItem(todo) {
                     ${todo.completed ? 'checked' : ''}>
                 <span class="gt-date-badge ${dateClass}">${dateLabel}</span>
                 <span class="gt-priority-badge" style="background: ${priority.color}">${priority.label}</span>
+                ${todo.pinned ? '<span class="gt-pin-badge" title="已置顶">📌</span>' : ''}
                 <span class="gt-content">${escapeHtml(todo.content)}</span>
                 ${hasSubtasks ? `
                     <button class="gt-subtask-toggle" data-date="${todo._date}" data-id="${todo.id}" title="展开/收起子任务">

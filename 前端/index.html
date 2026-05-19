@@ -30,6 +30,11 @@
                 <div class="module-header">
                     <h2 class="module-title">📝 <span id="todoDateDisplay">今天</span></h2>
                     <div class="header-buttons">
+                        <select id="todoSortMode" class="sort-select" title="排序方式">
+                            <option value="priority">按优先级</option>
+                            <option value="time">按时间</option>
+                            <option value="combined">综合排序</option>
+                        </select>
                         <button class="btn btn-sm" id="globalTodoBtn" title="查看所有日期的待办事项">🔍 全局</button>
                         <button class="btn btn-primary btn-sm" id="addTodoBtn">+ 新增</button>
                     </div>
