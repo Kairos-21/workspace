@@ -2,7 +2,6 @@
 
 一站式效率工具，集成待办管理、番茄专注、日历日程、游戏化自律系统。独立开发，AI 驱动全流程。
 
-🔗 **在线体验**：[personal-workspace.onrender.com](https://personal-workspace.onrender.com)
 
 ---
 
