@@ -678,7 +678,7 @@ function showAddFolderModal() {
                             <label class="form-label">上传图片</label>
                             <label class="upload-btn">
                                 <span>📷</span> 选择图片
-                                <input type="file" id="folderIconFile" accept="image/png,image/jpeg,image/jpg,image/svg+xml,image/gif" style="display: none;">
+                                <input type="file" id="folderIconFile" accept="image/png,image/jpeg,image/jpg,image/svg+xml,image/gif,image/x-icon" style="display: none;">
                             </label>
                         </div>
                     </div>
@@ -868,7 +868,7 @@ function showEditFolderModal(id) {
                             <label class="form-label">上传图片</label>
                             <label class="upload-btn">
                                 <span>📷</span> 选择图片
-                                <input type="file" id="editFolderIconFile" accept="image/png,image/jpeg,image/jpg,image/svg+xml,image/gif" style="display: none;">
+                                <input type="file" id="editFolderIconFile" accept="image/png,image/jpeg,image/jpg,image/svg+xml,image/gif,image/x-icon" style="display: none;">
                             </label>
                         </div>
                     </div>
@@ -1076,12 +1076,12 @@ function getIconTypeSelector(selectedType = 'default') {
                 <div id="customIconPreview" style="text-align: center; padding: 16px; background: var(--bg-secondary); border-radius: 8px; margin-bottom: 8px;">
                     <span style="color: var(--text-secondary); font-size: 0.85rem;">请上传图片作为图标</span>
                 </div>
-                <input type="file" id="customIconFile" accept="image/png,image/jpeg,image/jpg,image/svg+xml" style="display: none;">
+                <input type="file" id="customIconFile" accept="image/png,image/jpeg,image/jpg,image/svg+xml,image/x-icon" style="display: none;">
                 <button id="uploadIconBtn" class="btn btn-secondary" style="width: 100%; font-size: 0.85rem;">
                     📁 选择图片文件
                 </button>
                 <small style="color: var(--text-secondary); font-size: 0.75rem; display: block; text-align: center; margin-top: 4px;">
-                    支持 PNG、JPG、SVG 格式，最大 2MB
+                    支持 PNG、JPG、SVG、ICO 格式，最大 2MB
                 </small>
             </div>
         </div>

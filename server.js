@@ -62,11 +62,11 @@ const iconUpload = multer({
     storage: iconStorage,
     limits: { fileSize: 2 * 1024 * 1024 }, // 2MB
     fileFilter: (req, file, cb) => {
-        const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml'];
+        const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/svg+xml', 'image/x-icon', 'image/vnd.microsoft.icon'];
         if (allowedTypes.includes(file.mimetype)) {
             cb(null, true);
         } else {
-            cb(new Error('仅支持 PNG、JPG、SVG 格式'));
+            cb(new Error('仅支持 PNG、JPG、SVG、ICO 格式'));
         }
     }
 });
@@ -223,6 +223,7 @@ app.get('/api/export', (req, res) => {
                     '.jpeg': 'image/jpeg',
                     '.svg': 'image/svg+xml',
                     '.gif': 'image/gif',
+                    '.ico': 'image/x-icon',
                     '.mp3': 'audio/mpeg',
                     '.wav': 'audio/wav',
                     '.ogg': 'audio/ogg',
@@ -640,7 +641,7 @@ app.post('/api/upload-icon', iconUpload.single('icon'), (req, res) => {
             });
         }
         
-        const filePath = 'uploads/icons/' + req.file.filename;
+        const filePath = '/uploads/icons/' + req.file.filename;
         const originalName = req.file.originalname;
         
         console.log('[Icon] 上传成功: ' + filePath);
@@ -675,7 +676,7 @@ app.post('/api/upload-sound', soundUpload.single('sound'), (req, res) => {
             });
         }
         
-        const filePath = 'uploads/sounds/' + req.file.filename;
+        const filePath = '/uploads/sounds/' + req.file.filename;
         const originalName = req.file.originalname;
         const soundId = 'custom_' + Date.now();
         
@@ -715,14 +716,15 @@ app.delete('/api/file', (req, res) => {
     }
     
     // 安全检查：只允许删除 uploads 目录下的文件
-    if (!filePath.startsWith('uploads/')) {
+    const normalizedPath = filePath.startsWith('/') ? filePath.slice(1) : filePath;
+    if (!normalizedPath.startsWith('uploads/')) {
         return res.status(403).json({
             success: false,
             message: '非法路径'
         });
     }
     
-    const fullPath = path.join(__dirname, filePath);
+    const fullPath = path.join(__dirname, normalizedPath);
     
     try {
         if (fs.existsSync(fullPath)) {
@@ -760,9 +762,10 @@ const bgUpload = multer({
     storage: bgStorage,
     limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
     fileFilter: (req, file, cb) => {
-        const allowedTypes = /jpeg|jpg|png|gif|webp/;
-        const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-        const mimetype = allowedTypes.test(file.mimetype);
+        const allowedExts = /\.(jpeg|jpg|png|gif|webp|ico)$/i;
+        const allowedMimes = /jpeg|jpg|png|gif|webp|icon/;
+        const extname = allowedExts.test(path.extname(file.originalname).toLowerCase());
+        const mimetype = allowedMimes.test(file.mimetype);
         if (extname && mimetype) {
             return cb(null, true);
         }
