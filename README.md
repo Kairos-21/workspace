@@ -49,7 +49,7 @@
 | 前端 | 原生 JavaScript（无框架，模块化架构） |
 | 后端 | Node.js + Express |
 | 存储 | LocalStorage + JSON 文件 |
-| 部署 | Render 全栈托管 |
+| 部署 | Render 全栈托管 |（暂时下线）
 
 ---
 
