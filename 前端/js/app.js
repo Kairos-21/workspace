@@ -258,7 +258,21 @@ function applyBackground(bgPath) {
     if (bgPath) {
         // 如果是相对路径，添加API_BASE前缀
         const fullPath = bgPath.startsWith('http') ? bgPath : `${API_BASE}${bgPath}`;
-        document.body.style.backgroundImage = `url('${fullPath}')`;
+        // 先测试图片是否能加载，失败则回退到 CSS 默认背景
+        const testImg = new Image();
+        testImg.onload = function() {
+            document.body.style.backgroundImage = `url('${fullPath}')`;
+        };
+        testImg.onerror = function() {
+            console.warn('背景图片加载失败，已恢复默认背景:', fullPath);
+            document.body.style.backgroundImage = '';
+            // 清除失效的背景路径，避免下次启动再次尝试
+            if (appData.settings) {
+                appData.settings.backgroundPath = null;
+                saveToLocalStorage();
+            }
+        };
+        testImg.src = fullPath;
     } else {
         document.body.style.backgroundImage = '';
     }
