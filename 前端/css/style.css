@@ -57,6 +57,7 @@
 body {
     font-family: var(--font-main);
     background-color: var(--bg-primary);
+    background-image: url('../images/default-bg.jpg');
     color: var(--text-primary);
     line-height: 1.6;
     min-height: 100vh;
