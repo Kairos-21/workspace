@@ -96,8 +96,33 @@ const soundUpload = multer({
 
 // 默认数据
 const DEFAULT_DATA = {
-    todos: [],
+    todos: [
+        {
+            id: 'default_daily',
+            content: '日常',
+            priority: 'daily',
+            completed: false,
+            pinned: false,
+            subtasks: [
+                { id: 'default_sub_1', content: '学习', completed: false },
+                { id: 'default_sub_2', content: 'vibe coding', completed: false }
+            ],
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+        },
+        {
+            id: 'default_job',
+            content: '求职ing',
+            priority: 'high',
+            completed: false,
+            pinned: false,
+            subtasks: [],
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+        }
+    ],
     schedules: [],
+    _isNewUser: true,
     shortcuts: [
         { id: 's1', name: 'GitHub', url: 'https://github.com', icon: 'github', type: 'web', iconType: 'default' },
         { id: 's2', name: 'Google', url: 'https://google.com', icon: 'google', type: 'web', iconType: 'default' },

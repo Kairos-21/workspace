@@ -58,6 +58,11 @@ async function loadData() {
         
         if (result.success) {
             Object.assign(window.appData, result.data);
+            // 新用户首次访问：创建默认日程
+            if (window.appData._isNewUser) {
+                createDefaultSchedule();
+                delete window.appData._isNewUser;
+            }
             // 保存一份到 LocalStorage，下次直接用
             saveToLocalStorage();
             console.log('✅ 从后端加载数据并保存到 LocalStorage');
@@ -130,6 +135,40 @@ function getToday() {
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
+}
+
+/**
+ * 新用户首次访问：创建默认 7 天多日日程
+ */
+function createDefaultSchedule() {
+    const today = getToday();
+    // 计算 7 天后的日期
+    const endDate = new Date();
+    endDate.setDate(endDate.getDate() + 6);
+    const endYear = endDate.getFullYear();
+    const endMonth = String(endDate.getMonth() + 1).padStart(2, '0');
+    const endDay = String(endDate.getDate()).padStart(2, '0');
+    const endDateStr = `${endYear}-${endMonth}-${endDay}`;
+
+    const schedule = {
+        id: generateId(),
+        title: '求职ing',
+        date: today,
+        endDate: endDateStr,
+        startTime: '',
+        endTime: '',
+        priority: 'high',
+        category: '工作',
+        color: '#E74C3C',
+        description: '',
+        createdAt: new Date().toISOString()
+    };
+
+    if (!window.appData.schedules) {
+        window.appData.schedules = [];
+    }
+    window.appData.schedules.push(schedule);
+    console.log('✅ 已创建默认日程：求职ing（' + today + ' ~ ' + endDateStr + '）');
 }
 
 // ========================================
