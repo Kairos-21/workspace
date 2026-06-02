@@ -124,15 +124,16 @@ const DEFAULT_DATA = {
     schedules: [],
     _isNewUser: true,
     shortcuts: [
+        { id: 's_folder_as', name: 'as', icon: '📁', type: 'folder', displayMode: 'preview', children: [], iconType: 'default' },
         { id: 's1', name: 'GitHub', url: 'https://github.com', icon: 'github', type: 'web', iconType: 'default' },
         { id: 's2', name: 'Google', url: 'https://google.com', icon: 'google', type: 'web', iconType: 'default' },
         { id: 's3', name: 'Bilibili', url: 'https://bilibili.com', icon: 'bilibili', type: 'web', iconType: 'default' },
         { id: 's4', name: '知乎', url: 'https://zhihu.com', icon: 'zhihu', type: 'web', iconType: 'default' },
         { id: 's5', name: '掘金', url: 'https://juejin.cn', icon: 'juejin', type: 'web', iconType: 'default' },
         { id: 's6', name: 'Notion', url: 'https://notion.so', icon: 'notion', type: 'web', iconType: 'default' },
-        { id: 's7', name: '微信', url: 'weixin://', icon: 'app_wechat', type: 'app', iconType: 'default' },
-        { id: 's8', name: 'QQ', url: 'tencent://', icon: 'app_qq', type: 'app', iconType: 'default' },
-        { id: 's9', name: '飞书', url: 'feishu://', icon: 'app_feishu', type: 'app', iconType: 'default' }
+        { id: 's7', name: '微信', url: 'weixin://', icon: 'app_wechat', type: 'app', iconType: 'custom', customIconPath: '/images/icons/wechat.jpg' },
+        { id: 's8', name: 'QQ', url: 'tencent://', icon: 'app_qq', type: 'app', iconType: 'custom', customIconPath: '/images/icons/qq.jpg' },
+        { id: 's9', name: '飞书', url: 'feishu://', icon: 'app_feishu', type: 'app', iconType: 'custom', customIconPath: '/images/icons/feishu.jpg' }
     ],
     pomodoroSettings: {
         workDuration: 25,
