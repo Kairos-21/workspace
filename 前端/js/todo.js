@@ -61,6 +61,28 @@ function getYesterday(todayStr) {
 }
 
 /**
+ * 从今天往前回溯，找到最近一个有待办数据的日期
+ * 解决用户N天没打开应用导致 carryOver 断链的问题
+ */
+function findLastActiveDate(todayStr) {
+    if (!window.appData.todosByDate) return null;
+    const today = new Date(todayStr);
+    // 最多回溯 365 天
+    for (let i = 1; i <= 365; i++) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const dateStr = `${year}-${month}-${day}`;
+        if (window.appData.todosByDate[dateStr] && window.appData.todosByDate[dateStr].length > 0) {
+            return dateStr;
+        }
+    }
+    return null;
+}
+
+/**
  * 检查待办事项是否全部完成（包括子任务）
  */
 function isTodoFullyCompleted(todo) {
@@ -72,17 +94,18 @@ function isTodoFullyCompleted(todo) {
 }
 
 /**
- * 把前一天的持续待办复制到今天，并添加日常优先级待办
+ * 从最近有数据的日期搬运持续待办和日常待办到今天
+ * 支持断链恢复：如果昨天没数据，向前回溯查找最近活跃日期
  */
 function carryOverContinuousTodos() {
     const today = window.getToday();
-    const yesterday = getYesterday(today);
-    
-    // 获取昨天的待办事项
-    if (!window.appData.todosByDate || !window.appData.todosByDate[yesterday]) {
+
+    // 从昨天开始往前回溯，找到最近一个有待办数据的日期
+    const lastActiveDate = findLastActiveDate(today);
+    if (!lastActiveDate) {
         return;
     }
-    const yesterdayTodos = window.appData.todosByDate[yesterday];
+    const sourceTodos = window.appData.todosByDate[lastActiveDate];
     
     // 获取今天的待办事项
     if (!window.appData.todosByDate[today]) {
@@ -102,7 +125,7 @@ function carryOverContinuousTodos() {
     const dailyTodosToAdd = [];
     
     // 遍历昨天的待办
-    yesterdayTodos.forEach(yesterdayTodo => {
+    sourceTodos.forEach(yesterdayTodo => {
         // 处理日常优先级待办
         if (yesterdayTodo.priority === 'daily') {
             // 为日常待办生成或获取 dailyId
